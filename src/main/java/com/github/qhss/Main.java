@@ -7,12 +7,6 @@ import org.javacord.api.entity.intent.Intent;
 
 public class Main {
     public static void main(String[] args) {
-        //    DiscordApi api =
-        //        new DiscordApiBuilder()
-        //
-        // .setToken("NzUzMzgwMTY1MzkxODc2MTg3.GcL-sZ.SP1tz1DCV1KLD3omBye7LPw6DK4DKx25rgc1W4")
-        //            .addIntents(Intent.MESSAGE_CONTENT, Intent.GUILD_MESSAGE_REACTIONS)
-        //            .login().join();
         Dotenv dotenv = Dotenv.load();
         DiscordApi api =
                 new DiscordApiBuilder()
