@@ -1,4 +1,5 @@
 package com.github.qhss;
+
 import java.util.*;
 import static com.github.qhss.Card.*;
 
@@ -14,16 +15,19 @@ public class Deck {
     }
 
     public void createDeck() {
-        this.deck = new Card[] { A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K, 
-                                 A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K, 
-                                 A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K, 
-                                 A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K };
+        deck =
+                new Card[] {
+                    A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K,
+                    A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K,
+                    A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K,
+                    A, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, J, Q, K
+                };
     }
 
     public void shuffle() {
         List<Card> deckList = Arrays.asList(deck);
-		Collections.shuffle(deckList);
-		deckList.toArray(deck);
+        Collections.shuffle(deckList);
+        deckList.toArray(deck);
     }
 
     public Card getTop() {
@@ -39,13 +43,9 @@ public class Deck {
 
     public void modifySuit() {
         char[] suits = {'d', 'c', 'h', 's'};
-        //int count = -1;
         for (int i = 0; i < deck.length; i++) {
-            //if (i % 13 == 0) count++;
-            //this.deck[i].setSuit(suits[count]);
             int suitIndex = i / 13;
-            this.deck[i].setSuit(suits[suitIndex]);
-            System.out.println(this.deck[i].getSuit());
+//            this.deck[i].setSuit(suits[suitIndex]);
         }
     }
 
@@ -53,8 +53,10 @@ public class Deck {
         return deck;
     }
 
-    public static void main (String args[]) {
+    public static void main(String args[]) {
         Deck d = new Deck();
-
+        System.out.println();
+//        System.out.println(d.getTop().getSuit());
+//        System.out.println(d.getTop().getSuit());
     }
 }

@@ -23,21 +23,7 @@ public enum Card {
         this.value = value;
         this.icon = icon;
     }
-
-
     public int getValue() {
         return value;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public char getSuit() {
-        return suit;
-    }
-
-    public void setSuit(char suit) {
-        this.suit = suit;
     }
 }
