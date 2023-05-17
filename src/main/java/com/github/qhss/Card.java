@@ -17,6 +17,7 @@ public enum Card {
 
     private final int value;
     private final String icon;
+    private char suit;
 
     Card(int value, String icon) {
         this.value = value;
@@ -30,5 +31,13 @@ public enum Card {
 
     public String getIcon() {
         return icon;
+    }
+
+    public char getSuit() {
+        return suit;
+    }
+
+    public void setSuit(char suit) {
+        this.suit = suit;
     }
 }
