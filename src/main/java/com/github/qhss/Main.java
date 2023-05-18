@@ -6,9 +6,6 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -28,7 +25,7 @@ public class Main {
         api.addMessageCreateListener(
                 event -> {
                     if (event.getMessageContent().equalsIgnoreCase("!ping")) {
-                        event.getChannel().sendMessage(String.valueOf(Card.J));
+                        event.getChannel().sendMessage(String.valueOf(CardSymbol.J));
                     }
                 });
     }
