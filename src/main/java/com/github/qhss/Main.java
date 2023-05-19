@@ -4,11 +4,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.intent.Intent;
-import org.javacord.api.entity.message.MessageBuilder;
-import org.javacord.api.entity.message.component.ActionRow;
-import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.interaction.SlashCommand;
 import org.javacord.api.interaction.SlashCommandOption;
 import org.javacord.api.interaction.SlashCommandOptionChoice;
