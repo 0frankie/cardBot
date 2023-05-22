@@ -32,7 +32,7 @@ public class Blackjack implements CardGame{
         throw new UnsupportedOperationException("Unimplemented method 'checkWinner'");
     }
     // A + (values) > 21
-    // A = 0
+    // A = 1
     private int getScore(Player p) {
         int score = 0;
         ArrayList<Card> playerHand = p.getHand();
