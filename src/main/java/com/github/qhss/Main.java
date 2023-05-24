@@ -1,13 +1,16 @@
 package com.github.qhss;
 
+import com.google.gson.Gson;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 import org.javacord.api.entity.message.MessageFlag;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.interaction.*;
 
+import java.awt.*;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Set;
@@ -19,6 +22,15 @@ public class Main {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         File f = new File(classLoader.getResource("test.txt").getFile());
         System.out.println(f.length());
+
+        Gson gson = new Gson();
+        Player[] p = {new Player(100, "HELLO"), new Player(200, "JOHNNY")};
+
+        try {
+            gson.toJson(p, new FileWriter(classLoader.getResource("balance.json").getFile()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         DiscordApi api =
                 new DiscordApiBuilder()
@@ -55,16 +67,37 @@ public class Main {
                             slashCommandInteraction.getArguments().get(0).getStringValue().get();
 
                     if (option.equals("bj")) {
+                        EmbedBuilder embed =
+                                new EmbedBuilder()
+                                        .setTitle("Blackjack")
+                                        .setDescription("Play against the dealer!")
+                                        .addField("Dealer's Cards: ", "VALUE")
+                                        .addField("Your Cards: ", "VALUE")
+                                        .setColor(Color.CYAN)
+                                        .setFooter(
+                                                "Footer",
+                                                "https://github.com/FwankiL/cardBot/blob/master/src/main/resources/assets/profile.png")
+                                        .setImage(
+                                                new File(
+                                                        classLoader
+                                                                .getResource(
+                                                                        "assets/PlayingCards/PNG-cards-1.3/c/2.png")
+                                                                .getFile()))
+                                        .setThumbnail(
+                                                new File(
+                                                        classLoader
+                                                                .getResource(
+                                                                        "assets/PlayingCards/PNG-cards-1.3/c/5.png")
+                                                                .getFile()));
+
                         slashCommandInteraction
                                 .createImmediateResponder()
-                                .setContent("Ok")
-                                .setFlags(MessageFlag.EPHEMERAL)
+                                .addEmbed(embed)
                                 .respond();
-                    }
-                    else if (option.equals("_")) {
+                    } else if (option.equals("_")) {
                         slashCommandInteraction
                                 .createImmediateResponder()
-                                .setContent("Working properly!")
+                                .setContent("Alternative working properly!")
                                 .setFlags(MessageFlag.EPHEMERAL)
                                 .respond();
                     }

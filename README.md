@@ -1,5 +1,7 @@
 # Card Bot
-**Card Bot** is a Discord bot built in Java meant to stimulate household playing card games.
+**Card Bot** is a Discord bot built in Java with [Javacord](https://javacord.org/) meant to stimulate household playing card games.
+
+![Profile Image](./src/main/resources/assets/profile.png)
 
 ## Games
 - Blackjack
@@ -16,3 +18,6 @@ Designer:
 
 ## Credits
 - Byron Knoll: http://code.google.com/p/vector-playing-cards/
+- Bastian Oppermann: [Javacord](https://github.com/Javacord/Javacord)
+- Google: [GSON](https://github.com/google/gson)
+- Cdimascio: [Dotenv](https://github.com/cdimascio/dotenv-java)

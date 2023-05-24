@@ -2,20 +2,23 @@ package com.github.qhss;
 import java.util.*;
 
 public class Player {
-    private ArrayList<Card> hand = new ArrayList<>();
-    private boolean turn;
-    private int betAmount;
-    private boolean doubleDown;
+    private transient boolean doubleDown;
+    private transient boolean turn;
+    private transient int betAmount;
     private int money;
+    private transient ArrayList<Card> hand = new ArrayList<>();
+
+    private String username;
 
     public Player() {
         turn = false;
         this.money = Integer.MAX_VALUE;
     }
 
-    public Player(int money) {
+    public Player(int money, String username) {
         turn = true;
         this.money = money;
+        this.username = username;
     }
 
     public void setBetAmount(int betAmount) {

@@ -14,6 +14,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.javacord:javacord:3.8.0")
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 tasks.test {
