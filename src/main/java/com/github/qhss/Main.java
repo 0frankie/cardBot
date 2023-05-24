@@ -5,10 +5,8 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
-import org.javacord.api.interaction.SlashCommand;
-import org.javacord.api.interaction.SlashCommandOption;
-import org.javacord.api.interaction.SlashCommandOptionChoice;
-import org.javacord.api.interaction.SlashCommandOptionType;
+import org.javacord.api.entity.message.MessageFlag;
+import org.javacord.api.interaction.*;
 
 import java.io.*;
 import java.util.Arrays;
@@ -31,28 +29,46 @@ public class Main {
 
         SlashCommand command =
                 SlashCommand.with(
-                        "cb",
-                        "Card games",
-                        Arrays.asList(
-                                SlashCommandOption.createWithOptions(
-                                        SlashCommandOptionType.SUB_COMMAND,
-                                        "game",
-                                        "Starts a specific game",
-                                        Arrays.asList(
-                                                SlashCommandOption.createWithChoices(
-                                                        SlashCommandOptionType.DECIMAL,
-                                                        "bj",
-                                                        "Plays a game of Blackjack",
-                                                        true,
-                                                        Arrays.asList(
-                                                                SlashCommandOptionChoice.create(
-                                                                        "bot", 0),
-                                                                SlashCommandOptionChoice.create(
-                                                                        "player", 1)))))))
+                                "cb",
+                                "Card games",
+                                Arrays.asList(
+                                        SlashCommandOption.createWithChoices(
+                                                SlashCommandOptionType.STRING,
+                                                "game",
+                                                "Plays a game of something",
+                                                true,
+                                                Arrays.asList(
+                                                        SlashCommandOptionChoice.create(
+                                                                "blackjack", "bj"),
+                                                        SlashCommandOptionChoice.create(
+                                                                "_", "_")))))
                         .createGlobal(api)
                         .join();
 
         Set<SlashCommand> commands = api.getGlobalSlashCommands().join();
+
+        api.addSlashCommandCreateListener(
+                event -> {
+                    SlashCommandInteraction slashCommandInteraction =
+                            event.getSlashCommandInteraction();
+                    String option =
+                            slashCommandInteraction.getArguments().get(0).getStringValue().get();
+
+                    if (option.equals("bj")) {
+                        slashCommandInteraction
+                                .createImmediateResponder()
+                                .setContent("Ok")
+                                .setFlags(MessageFlag.EPHEMERAL)
+                                .respond();
+                    }
+                    else if (option.equals("_")) {
+                        slashCommandInteraction
+                                .createImmediateResponder()
+                                .setContent("Working properly!")
+                                .setFlags(MessageFlag.EPHEMERAL)
+                                .respond();
+                    }
+                });
         // Add a listener which answers with "Pong!" if someone writes "!ping"
         api.addMessageCreateListener(
                 event -> {
