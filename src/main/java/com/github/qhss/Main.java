@@ -18,7 +18,7 @@ import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
-        Dotenv dotenv = Dotenv.load();
+        // Dotenv dotenv = Dotenv.load();
 
         // attempts to open a file
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -41,7 +41,7 @@ public class Main {
 
         DiscordApi api =
                 new DiscordApiBuilder()
-                        .setToken(dotenv.get("DISCORD_TOKEN"))
+                        .setToken(System.getenv("DISCORD_TOKEN"))
                         .addIntents(Intent.MESSAGE_CONTENT)
                         .login()
                         .join();
