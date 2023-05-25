@@ -21,12 +21,20 @@ public class Player {
         this.username = username;
     }
 
-    public void setBetAmount(int betAmount) {
-        this.betAmount = betAmount;
-    }
-
     public int getBetAmount() {
         return betAmount;
+    }
+
+    public int getMoney() {
+        return money;
+    }
+
+    public ArrayList<Card> getHand() {
+        return hand;
+    }
+
+    public String getUsername() {
+        return this.username;
     }
 
     public boolean isDoubleDown() {
@@ -37,11 +45,7 @@ public class Player {
         return turn;
     }
 
-    public ArrayList<Card> getHand() {
-        return hand;
-    }
-
-    public String getUsername() {
-        return this.username;
+    public void setBetAmount(int betAmount) {
+        this.betAmount = betAmount;
     }
 }

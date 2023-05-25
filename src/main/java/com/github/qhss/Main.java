@@ -13,6 +13,7 @@ import org.javacord.api.interaction.*;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -30,7 +31,9 @@ public class Main {
         System.out.println(f.length());
 
         Gson gson = new Gson();
-        Player[] p = {new Player(100, "HELLO"), new Player(200, "JOHNNY")};
+        ArrayList<Player> p = new ArrayList<>();
+        p.add(new Player(100, "HELLO"));
+        p.add(new Player(200, "JOHNNY"));
 
         // writes to a JSON file
         try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
@@ -109,7 +112,17 @@ public class Main {
         // Add a listener which answers with "Pong!" if someone writes "!ping"
         api.addMessageCreateListener(
                 event -> {
-                    if (event.getMessageContent().equalsIgnoreCase("!ping")) {
+                        String msg = event.getMessageContent();
+                        String author = event.getMessageAuthor().getDiscriminatedName();
+                        Player[] array;
+
+                        try (Reader reader = new FileReader(classLoader.getResource("balance.json").getFile())) {
+                            array = gson.fromJson(reader, Player[].class);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }    
+
+                    if (msg.equalsIgnoreCase("!ping")) {
                         EmbedBuilder embed =
                                 new EmbedBuilder()
                                         .setTitle("Blackjack")
@@ -131,15 +144,42 @@ public class Main {
                                                                 .getFile()));
 
                         event.getChannel().sendMessage(embed);
-                    } else if (event.getMessageContent().equalsIgnoreCase("!json")) {
-                        try (Reader reader = new FileReader(classLoader.getResource("balance.json").getFile())) {
-                            Player[] array = gson.fromJson(reader, Player[].class);
-                            for (Player s : array)
-                                event.getChannel().sendMessage(s.getUsername());
+                    } else if (msg.equalsIgnoreCase("!json")) {
+                        String message = "";
+                        for (Player player : array) {
+                        if (player.getUsername().equals(author)) {
+                            message = String.valueOf(player.getMoney());
+                        }
+                        }
+                        if (message.equals("")) {
+                        message = appendPlayer(array, author);
+                        }
+
+                        event.getChannel().sendMessage(message);
+                    } else if (msg.equalsIgnoreCase("!money+")) {
+                        try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
+                            for (Player plr : array) {
+                                ;
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                        event.getChannel().sendMessage("money added! current money: " + event.getMessageAuthor().getDisplayName());
                     }
                 });
+    }
+
+    public static String appendPlayer(Player[] array, String username) {
+
+        Player[] a = new Player[array.length + 1];
+        a = array;
+        a[array.length - 1] = new Player(100, username);
+
+        try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
+            new Gson().toJson(array, fileWriter);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return String.valueOf(a[array.length - 1].getMoney());
     }
 }
