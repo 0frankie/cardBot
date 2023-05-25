@@ -1,6 +1,7 @@
 package com.github.qhss;
 
 import com.google.gson.Gson;
+
 import io.github.cdimascio.dotenv.Dotenv;
 
 import org.javacord.api.DiscordApi;
@@ -19,15 +20,21 @@ public class Main {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.load();
 
+        // attempts to open a file
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        File f = new File(classLoader.getResource("test.txt").getFile());
+        File f =
+                new File(
+                        classLoader
+                                .getResource("assets/PlayingCards/PNG-cards-1.3/c/2.png")
+                                .getFile());
         System.out.println(f.length());
 
         Gson gson = new Gson();
         Player[] p = {new Player(100, "HELLO"), new Player(200, "JOHNNY")};
 
-        try {
-            gson.toJson(p, new FileWriter(classLoader.getResource("balance.json").getFile()));
+        // writes to a JSON file
+        try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
+            gson.toJson(p, fileWriter);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -76,8 +83,6 @@ public class Main {
                                         .setColor(Color.CYAN)
                                         .setFooter(
                                                 "Footer",
-                                                "https://github.com/FwankiL/cardBot/blob/master/src/main/resources/assets/profile.png")
-                                        .setImage(
                                                 new File(
                                                         classLoader
                                                                 .getResource(
@@ -86,8 +91,7 @@ public class Main {
                                         .setThumbnail(
                                                 new File(
                                                         classLoader
-                                                                .getResource(
-                                                                        "assets/PlayingCards/PNG-cards-1.3/c/5.png")
+                                                                .getResource("assets/profile.png")
                                                                 .getFile()));
 
                         slashCommandInteraction
@@ -106,7 +110,35 @@ public class Main {
         api.addMessageCreateListener(
                 event -> {
                     if (event.getMessageContent().equalsIgnoreCase("!ping")) {
-                        event.getChannel().sendMessage(String.valueOf(CardSymbol.J));
+                        EmbedBuilder embed =
+                                new EmbedBuilder()
+                                        .setTitle("Blackjack")
+                                        .setDescription("Play against the dealer!")
+                                        .addField("Dealer's Cards: ", "VALUE")
+                                        .addField("Your Cards: ", "VALUE")
+                                        .setColor(Color.CYAN)
+                                        .setFooter(
+                                                "Footer",
+                                                new File(
+                                                        classLoader
+                                                                .getResource(
+                                                                        "assets/PlayingCards/PNG-cards-1.3/c/2.png")
+                                                                .getFile()))
+                                        .setThumbnail(
+                                                new File(
+                                                        classLoader
+                                                                .getResource("assets/profile.png")
+                                                                .getFile()));
+
+                        event.getChannel().sendMessage(embed);
+                    } else if (event.getMessageContent().equalsIgnoreCase("!json")) {
+                        try (Reader reader = new FileReader(classLoader.getResource("balance.json").getFile())) {
+                            Player[] array = gson.fromJson(reader, Player[].class);
+                            for (Player s : array)
+                                event.getChannel().sendMessage(s.getUsername());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
     }
