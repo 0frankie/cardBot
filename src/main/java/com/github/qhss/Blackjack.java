@@ -29,7 +29,7 @@ public class Blackjack implements CardGame{
 
    @Override
    public boolean checkWinner() {
-      
+        return false;
    }
    // A + (values) > 21
    // A = 1
@@ -37,7 +37,7 @@ public class Blackjack implements CardGame{
        int score = 0;
        ArrayList<Card> playerHand = p.getHand();
        for (Card c: playerHand) {
-           score += c.getValue();
+           score += c.cardSymbol().getValue();
        }
        int counter = 0;
        while (score > 21 && counter < playerHand.size()) {

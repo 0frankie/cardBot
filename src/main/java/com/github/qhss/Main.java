@@ -31,16 +31,17 @@ public class Main {
         System.out.println(f.length());
 
         Gson gson = new Gson();
-        ArrayList<Player> p = new ArrayList<>();
-        p.add(new Player(100, "HELLO"));
-        p.add(new Player(200, "JOHNNY"));
+        // ArrayList<Player> p = new ArrayList<>();
+        // p.add(new Player(100, "HELLO"));
+        // p.add(new Player(200, "JOHNNY"));
 
-        // writes to a JSON file
-        try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
-            gson.toJson(p, fileWriter);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        // // writes to a JSON file
+        // try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
+        //     gson.toJson(p, fileWriter);
+        //     fileWriter.close();
+        // } catch (IOException e) {
+        //     throw new RuntimeException(e);
+        // }
 
         DiscordApi api =
                 new DiscordApiBuilder()
@@ -118,9 +119,10 @@ public class Main {
 
                         try (Reader reader = new FileReader(classLoader.getResource("balance.json").getFile())) {
                             array = gson.fromJson(reader, Player[].class);
+                            reader.close();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
-                        }    
+                        }
 
                     if (msg.equalsIgnoreCase("!ping")) {
                         EmbedBuilder embed =
@@ -147,20 +149,36 @@ public class Main {
                     } else if (msg.equalsIgnoreCase("!json")) {
                         String message = "";
                         for (Player player : array) {
-                        if (player.getUsername().equals(author)) {
-                            message = String.valueOf(player.getMoney());
-                        }
+                            if (player.getUsername().equals(author)) {
+                                message = String.valueOf(player.getMoney());
+                            }
                         }
                         if (message.equals("")) {
-                        message = appendPlayer(array, author);
+                            Player[] a = new Player[array.length + 1];
+                            for (int i = 0; i < array.length; i++) {
+                                a[i] = array[i];
+                            }
+                            a[array.length] = new Player(100, author);
+                
+                            try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
+                                gson.toJson(a, fileWriter);
+                                fileWriter.close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            message = author + ", money: " + a[array.length].getMoney();
                         }
 
                         event.getChannel().sendMessage(message);
                     } else if (msg.equalsIgnoreCase("!money+")) {
                         try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
                             for (Player plr : array) {
-                                ;
+                                if (plr.getUsername().equals(author)) {
+                                    plr.setMoney(plr.getMoney() + 100);
+                                }
                             }
+                            gson.toJson(array, fileWriter);
+                            fileWriter.close();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -169,17 +187,8 @@ public class Main {
                 });
     }
 
-    public static String appendPlayer(Player[] array, String username) {
+//     public static String appendPlayer(Player[] array, String username) {
 
-        Player[] a = new Player[array.length + 1];
-        a = array;
-        a[array.length - 1] = new Player(100, username);
-
-        try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
-            new Gson().toJson(array, fileWriter);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return String.valueOf(a[array.length - 1].getMoney());
-    }
+        
+//     }
 }

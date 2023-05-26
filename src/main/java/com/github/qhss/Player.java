@@ -48,4 +48,8 @@ public class Player {
     public void setBetAmount(int betAmount) {
         this.betAmount = betAmount;
     }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
 }
