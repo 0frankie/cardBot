@@ -43,3 +43,6 @@ bin/
 
 ### Environment ###
 .env
+
+### Balance ###
+./src/main/resources/balance.json
