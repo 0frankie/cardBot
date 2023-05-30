@@ -52,4 +52,12 @@ public class Player {
     public void setMoney(int money) {
         this.money = money;
     }
+
+    public void addToHand(Card c) {
+        hand.add(c);
+    }
+
+    public void changeTurn(boolean change) {
+        turn = change;
+    }
 }
