@@ -74,7 +74,7 @@ public class Blackjack implements CardGame{
   @Override
   public int checkWinner() {
     int score = getScore(player);
-    if (score <= 21 && score > getScore(dealer) || getScore(dealer) > 21) {
+    if (score <= 21 && (score > getScore(dealer) || getScore(dealer) > 21)) {
         return 1;
     }
     else if (score <= 21 && score == getScore(dealer)) {
