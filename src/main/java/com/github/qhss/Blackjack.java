@@ -9,14 +9,21 @@ public class Blackjack implements CardGame{
       dealer = new Player();
       player = one;
       deck = new Deck();
+      play();
   }
 
   @Override
   public void play() {
-       player.addToHand(deck.getTop());
-       dealer.addToHand(deck.getTop());
-       player.addToHand(deck.getTop());
-       dealer.addToHand(deck.getTop());
+    player.addToHand(deck.getTop());
+    dealer.addToHand(deck.getTop());
+    player.addToHand(deck.getTop());
+    dealer.addToHand(deck.getTop());
+  }
+
+  public void dealerPlay() {
+      while (getScore(dealer) < 17){
+        dealer.addToHand(deck.getTop());
+      }
   }
 
   public void stand() {
@@ -84,6 +91,25 @@ public class Blackjack implements CardGame{
       }
       return score;
   }
+ /*
+  * Card.getSuit() == suit
+  * Card.cardSymbol().name() == number
+  */
+   public String[] getPlayerCards() {
+    String[] handPaths = new String[player.getHand().size()];
+    for (int i = 0; i < handPaths.length; i++) {
+            handPaths[i] = "assets/PlayingCards/PNG-cards-1.3/" + player.getHand().get(i).suit() + "/" + player.getHand().get(i).cardSymbol().name().toLowerCase() + ".png";
+    }
+    return handPaths;
+   }
+
+   public String[] getDealerCards() {
+    String[] handPaths = new String[dealer.getHand().size()];
+    for (int i = 0; i < handPaths.length; i++) {
+            handPaths[i] = "assets/PlayingCards/PNG-cards-1.3/" + player.getHand().get(i).suit() + "/" + player.getHand().get(i).cardSymbol().name().toLowerCase() + ".png";
+    }
+    return handPaths;
+   }    
 }
 
 

@@ -58,4 +58,20 @@ public class JsonUtils {
                 throw new RuntimeException(e);
         }
     }
+
+    public static boolean addPlayer(String author) {
+        Player[] array = read();
+        int plrIndex = JsonUtils.findPlayer(array, author);
+        if (plrIndex == -1) {
+                Player[] a = new Player[array.length + 1];
+                for (int i = 0; i < array.length; i++) {
+                        a[i] = array[i];
+                }
+                a[array.length] = new Player(1000, author);
+
+                JsonUtils.write(a);
+                return true;
+        }
+        return false;
+    }
 }

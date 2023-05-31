@@ -11,14 +11,18 @@ import com.github.qhss.listeners.ButtonListener;
 import com.github.qhss.listeners.CommandListener;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import javax.imageio.ImageIO;
+
 public class Main {
     private static HashMap<String, Blackjack> userGame = new HashMap<String, Blackjack>();
+    private static HashMap<String, CompletableFuture<Message>> userMsg = new HashMap<String, CompletableFuture<Message>>();
 
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
@@ -132,11 +136,43 @@ public class Main {
         return false;
     }
 
-    public static void addGame(String username, Blackjack bj) {
-        userGame.put(username, bj);
-    }
-
     public static HashMap<String, Blackjack> getGame() {
         return userGame;
     }
+
+    public static boolean removeMsg(String username) {
+        if (userMsg.containsKey(username)) {
+            userMsg.remove(username);
+            return true;
+        }
+        return false;
+    }
+
+    public static HashMap<String, CompletableFuture<Message>> getMsg() {
+        return userMsg;
+    }
+
+//     public static void aisokdjaiosjd() {
+//         File path = "assets/";
+
+//         // load source images
+//         BufferedImage image = ImageIO.read(new File(path, "image.png"));
+//         BufferedImage overlay = ImageIO.read(new File(path, "overlay.png"));
+
+//         // create the new image, canvas size is the max. of both image sizes
+//         int w = Math.max(image.getWidth(), overlay.getWidth());
+//         int h = Math.max(image.getHeight(), overlay.getHeight());
+//         BufferedImage combined = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+
+//         // paint both images, preserving the alpha channels
+//         Graphics g = combined.getGraphics();
+//         g.drawImage(image, 0, 0, null);
+//         g.drawImage(overlay, 0, 0, null);
+
+//         g.dispose();
+
+//         // Save as new image
+//         ImageIO.write(combined, "PNG", new File(path, "combined.png"));
+
+//     }
 }
