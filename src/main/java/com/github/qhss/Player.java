@@ -4,7 +4,6 @@ import java.util.*;
 public class Player {
     private transient boolean doubleDown;
     private transient boolean turn;
-    private transient int betAmount;
     private int money;
     private transient ArrayList<Card> hand = new ArrayList<>();
 
@@ -19,10 +18,6 @@ public class Player {
         turn = true;
         this.money = money;
         this.username = username;
-    }
-
-    public int getBetAmount() {
-        return betAmount;
     }
 
     public int getMoney() {
@@ -43,10 +38,6 @@ public class Player {
 
     public boolean isTurn() {
         return turn;
-    }
-
-    public void setBetAmount(int betAmount) {
-        this.betAmount = betAmount;
     }
 
     public void setMoney(int money) {

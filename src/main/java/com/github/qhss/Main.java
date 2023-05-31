@@ -3,8 +3,6 @@ package com.github.qhss;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
-import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.interaction.*;
 
 import com.github.qhss.listeners.ButtonListener;
@@ -16,13 +14,10 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
 import javax.imageio.ImageIO;
 
 public class Main {
     private static HashMap<String, Blackjack> userGame = new HashMap<String, Blackjack>();
-    private static HashMap<String, CompletableFuture<Message>> userMsg = new HashMap<String, CompletableFuture<Message>>();
 
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
@@ -58,74 +53,6 @@ public class Main {
                 .join();
 
         Set<SlashCommand> commands = api.getGlobalSlashCommands().join();
-
-        // Add a listener which answers with "Pong!" if someone writes "!ping"
-        api.addMessageCreateListener(
-                event -> {
-                        if (!event.getMessageAuthor().isBotUser()) {
-                                String msg = event.getMessageContent();
-                                String author = event.getMessageAuthor().getDiscriminatedName();
-                                Player[] array = JsonUtils.read();
-
-                        if (msg.equalsIgnoreCase("!ping")) {
-                                Card c = new Card(CardSymbol.EIGHT, 'c');
-                                Card c4 = new Card(CardSymbol.FOUR, 'd');
-
-                                EmbedBuilder embed =
-                                        new EmbedBuilder()
-                                                .setTitle("Blackjack")
-                                                .setDescription("Play against the dealer!")
-                                                .addField("Dealer's Cards: ", "VALUE")
-                                                .addField("Your Cards: ", "VALUE")
-                                                .setColor(Color.CYAN)
-                                                .setImage(
-                                                        new File(
-                                                                Main.getClassLoader()
-                                                                        .getResource(
-                                                                                "assets/PlayingCards/PNG-cards-1.3/" + c4.suit() + "/" + c4.cardSymbol().name().toLowerCase() + ".png")
-                                                                        .getFile()))
-                                                .setFooter(
-                                                        "Footer",
-                                                        new File(
-                                                                Main.getClassLoader()
-                                                                        .getResource(
-                                                                                "assets/PlayingCards/PNG-cards-1.3/" + c.suit() + "/" + c.cardSymbol().name().toLowerCase() + ".png")
-                                                                        .getFile()))
-                                                .setThumbnail(
-                                                        new File(
-                                                                Main.getClassLoader()
-                                                                        .getResource("assets/profile.png")
-                                                                        .getFile()));
-
-                                event.getChannel().sendMessage(embed);
-                        } else if (msg.equalsIgnoreCase("!json")) {
-                                String message = "";
-                                int plrIndex = JsonUtils.findPlayer(array, author);
-                                if (plrIndex != -1) {
-                                        message = String.valueOf(array[plrIndex].getMoney());
-                                }
-                                else {
-                                Player[] a = new Player[array.length + 1];
-                                for (int i = 0; i < array.length; i++) {
-                                        a[i] = array[i];
-                                }
-                                a[array.length] = new Player(100, author);
-                        
-                                JsonUtils.write(a);
-                                message = author + ", money: " + a[array.length].getMoney();
-                                }
-
-                                event.getChannel().sendMessage(message);
-                        } else if (msg.equalsIgnoreCase("!money+")) {
-                                int plrIndex = JsonUtils.findPlayer(array, author);
-                                if (plrIndex != -1) {
-                                    array[plrIndex].setMoney(array[plrIndex].getMoney() + 100);
-                                }
-                                JsonUtils.write(array);
-                                event.getChannel().sendMessage("money added! current money: " + array[array.length - 1].getMoney());
-                        }
-                }
-                });
     }
 
     public static boolean removeGame(String username) {
@@ -140,39 +67,72 @@ public class Main {
         return userGame;
     }
 
-    public static boolean removeMsg(String username) {
-        if (userMsg.containsKey(username)) {
-            userMsg.remove(username);
-            return true;
+    public static void appendImages(Blackjack bj, boolean fin) throws IOException {
+
+        // load source images
+        BufferedImage background = ImageIO.read(new File("src/main/resources/assets/table.png"));
+        // create the new image, canvas size is the max. of both image sizes
+        BufferedImage combined = new BufferedImage(background.getWidth(), background.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        // paint both images, preserving the alpha channels
+        Graphics g = combined.getGraphics();
+        g.drawImage(background, 0, 0, null);
+        if (!fin) {
+                BufferedImage hidden = ImageIO.read(new File("src/main/resources/assets/Back.png"));
+                BufferedImage dealer2 = ImageIO.read(new File(bj.getDealerCards()[1]));
+                g.drawImage(hidden, 360, 40, null); // hidden card
+                g.drawImage(dealer2, 510, 30, null); // actual card
         }
-        return false;
+        else {
+                int xDealer = background.getWidth() / bj.getDealerCards().length - 120;
+        
+                for (int i = 0; i < bj.getDealerCards().length; i++) {
+                        g.drawImage(ImageIO.read(new File(bj.getDealerCards()[i])), xDealer, 40, null);
+                        xDealer += 120;
+                }
+        }
+
+        int xPlayer = background.getWidth() / bj.getPlayerCards().length - 120;
+        
+        
+        for (int i = 0; i < bj.getPlayerCards().length; i++) {
+                g.drawImage(ImageIO.read(new File(bj.getPlayerCards()[i])), xPlayer, 210, null);
+                xPlayer += 120;
+        }
+
+        g.dispose();
+
+        // Save as new image
+        ImageIO.write(combined, "PNG", new File("src/main/resources/assets/combined.png"));
+
     }
 
-    public static HashMap<String, CompletableFuture<Message>> getMsg() {
-        return userMsg;
+    public static void beginningBoard(Blackjack bj) throws IOException {
+
+        // load source images
+        BufferedImage background = ImageIO.read(new File("src/main/resources/assets/table.png"));
+        BufferedImage hidden = ImageIO.read(new File("src/main/resources/assets/Back.png"));
+        BufferedImage dealer2 = ImageIO.read(new File(bj.getDealerCards()[1]));
+
+        // create the new image, canvas size is the max. of both image sizes
+        BufferedImage combined = new BufferedImage(background.getWidth(), background.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        // paint both images, preserving the alpha channels
+        Graphics g = combined.getGraphics();
+        g.drawImage(background, 0, 0, null);
+        
+        g.drawImage(hidden, 360, 40, null); // hidden card
+        g.drawImage(dealer2, 510, 30, null); // actual card
+
+        int index = 0;
+        for (int i = 360; i <= 510; i += 150) {
+                g.drawImage(ImageIO.read(new File(bj.getPlayerCards()[index])), i, 210, null);
+                index++;
+        }
+
+        g.dispose();
+
+        // Save as new image
+        ImageIO.write(combined, "PNG", new File("src/main/resources/assets/beginning.png"));
     }
-
-//     public static void aisokdjaiosjd() {
-//         File path = "assets/";
-
-//         // load source images
-//         BufferedImage image = ImageIO.read(new File(path, "image.png"));
-//         BufferedImage overlay = ImageIO.read(new File(path, "overlay.png"));
-
-//         // create the new image, canvas size is the max. of both image sizes
-//         int w = Math.max(image.getWidth(), overlay.getWidth());
-//         int h = Math.max(image.getHeight(), overlay.getHeight());
-//         BufferedImage combined = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-
-//         // paint both images, preserving the alpha channels
-//         Graphics g = combined.getGraphics();
-//         g.drawImage(image, 0, 0, null);
-//         g.drawImage(overlay, 0, 0, null);
-
-//         g.dispose();
-
-//         // Save as new image
-//         ImageIO.write(combined, "PNG", new File(path, "combined.png"));
-
-//     }
 }

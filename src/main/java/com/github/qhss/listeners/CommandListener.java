@@ -2,16 +2,12 @@ package com.github.qhss.listeners;
 
 import java.awt.Color;
 import java.io.File;
-import java.util.concurrent.CompletableFuture;
-
-import org.javacord.api.entity.message.Message;
+import java.io.IOException;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.javacord.api.entity.message.mention.AllowedMentions;
-import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
@@ -57,40 +53,51 @@ public class CommandListener implements SlashCommandCreateListener {
                                 slashCommandInteraction.createImmediateResponder().setContent("You're already playing a game!").setFlags(MessageFlag.EPHEMERAL).respond();
                                 return;
                         }
-                        Main.getGame().put(playerName, new Blackjack(array[JsonUtils.findPlayer(array, playerName)]));
-                        
-                        File aFile = new File(
-                                Main.getClassLoader()
-                                        .getResource(
-                                                "assets/PlayingCards/PNG-cards-1.3/c/two.png")
-                                        .getFile());
-
-                                        AllowedMentions allowedMentions = new AllowedMentionsBuilder()
-                                                .addUser(event.getSlashCommandInteraction().getUser().getId())
-                                                .setMentionRoles(true)
-                                                .setMentionEveryoneAndHere(false)
-                                                .build();
-
-                                                /*
-                                                 *         new MessageBuilder()
-                                                                .setAllowedMentions(allowedMentions)
-                                                                .append(user0.getMentionTag())
-                                                                .append(user1.getMentionTag())
-                                                                .append(role.getMentionTag())
-                                                                .append(role2.getMentionTag())
-                                                                .append("@everyone")
-                                                                .send(channel);
-                                                 */
+                        Blackjack bj = new Blackjack(array[JsonUtils.findPlayer(array, playerName)], s.getDecimalValue().get().intValue());
+                        if (bj.getScore(bj.getPlayer()) == 21) {
+                                try {
+                                        Main.appendImages(bj, true);
+                                } catch (IOException e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                }
+                                EmbedBuilder embed =
+                                new EmbedBuilder()
+                                        .setTitle("Blackjack")
+                                        .setDescription("You've got Blackjack!")
+                                        .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
+                                        .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
+                                        .setColor(Color.CYAN)
+                                        .setFooter(
+                                                "Your bet: $" + s.getDecimalValue().get())
+                                        .setImage(new File("src/main/resources/assets/combined.png"))
+                                        .setThumbnail(
+                                                new File(
+                                                        Main.getClassLoader()
+                                                                .getResource("assets/profile.png")
+                                                                .getFile()));
+                        new MessageBuilder()
+                                .setEmbed(embed)
+                                .send(slashCommandInteraction.getChannel().get());
+                                return;
+                        }
+                        Main.getGame().put(playerName, bj);
+                        try {
+                                Main.beginningBoard(bj);
+                        } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                        }
                         EmbedBuilder embed =
                                 new EmbedBuilder()
                                         .setTitle("Blackjack")
                                         .setDescription("Play against the dealer!")
                                         .addField("Dealer's Cards: ", "VALUE")
-                                        .addField("Your Cards: ", "VALUE")
+                                        .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
                                         .setColor(Color.CYAN)
                                         .setFooter(
-                                                "Your bet: $" + s.getDecimalValue().get(),
-                                                aFile)
+                                                "Your bet: $" + s.getDecimalValue().get())
+                                        .setImage(new File("src/main/resources/assets/beginning.png"))
                                         .setThumbnail(
                                                 new File(
                                                         Main.getClassLoader()
@@ -98,10 +105,7 @@ public class CommandListener implements SlashCommandCreateListener {
                                                                 .getFile()));
 
                         
-                        CompletableFuture<Message> msg = new MessageBuilder()
-                        .setAllowedMentions(allowedMentions)
-                        .append(event.getSlashCommandInteraction().getUser().getMentionTag())
-                                .setContent("@" + event.getInteraction().getUser().getDiscriminatedName())
+                        new MessageBuilder()
                                 .setEmbed(embed)
                                 .addComponents(
                                         ActionRow.of(
@@ -112,7 +116,6 @@ public class CommandListener implements SlashCommandCreateListener {
                                         )
                                 )
                                 .send(slashCommandInteraction.getChannel().get());
-                        Main.getMsg().put(playerName, msg);
                     }
                 
     }

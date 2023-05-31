@@ -2,13 +2,15 @@ package com.github.qhss;
 import java.util.*;
 
 public class Blackjack implements CardGame{
-  Player dealer, player;
-  Deck deck;
+  private Player dealer, player;
+  private Deck deck;
+  private int betAmount;
 
-  public Blackjack(Player one) {
+  public Blackjack(Player one, int betAmount) {
       dealer = new Player();
       player = one;
       deck = new Deck();
+      this.betAmount = betAmount;
       play();
   }
 
@@ -18,6 +20,14 @@ public class Blackjack implements CardGame{
     dealer.addToHand(deck.getTop());
     player.addToHand(deck.getTop());
     dealer.addToHand(deck.getTop());
+  }
+
+  public int getBetAmount() {
+    return betAmount;
+  }
+
+  public void setBetAmount(int betAmount) {
+    this.betAmount = betAmount;
   }
 
   public void dealerPlay() {
@@ -30,18 +40,17 @@ public class Blackjack implements CardGame{
        player.changeTurn(false);
   }
 
-  public void hit() {
-       if (player.isTurn()) {
-           player.addToHand(deck.getTop());
-           if (getScore(player) > 21) {
-               player.changeTurn(false);
-           }
-       }      
+  public boolean hit() {
+    player.addToHand(deck.getTop());
+    if (getScore(player) > 21) {
+        return false;
+    }
+    return true;
   }
-
 
   public boolean doubleDown() {
        if (player.getHand().size() == 2) {
+           this.betAmount *= 2;
            player.addToHand(deck.getTop());
            player.changeTurn(false);
            return true;
@@ -65,7 +74,7 @@ public class Blackjack implements CardGame{
   @Override
   public int checkWinner() {
     int score = getScore(player);
-    if (score <= 21 && score > getScore(dealer)) {
+    if (score <= 21 && score > getScore(dealer) || getScore(dealer) > 21) {
         return 1;
     }
     else if (score <= 21 && score == getScore(dealer)) {
@@ -76,7 +85,7 @@ public class Blackjack implements CardGame{
     }
 }
 
-  private int getScore(Player p) {
+  public int getScore(Player p) {
       int score = 0;
       ArrayList<Card> playerHand = p.getHand();
       for (Card c: playerHand) {
@@ -98,7 +107,7 @@ public class Blackjack implements CardGame{
    public String[] getPlayerCards() {
     String[] handPaths = new String[player.getHand().size()];
     for (int i = 0; i < handPaths.length; i++) {
-            handPaths[i] = "assets/PlayingCards/PNG-cards-1.3/" + player.getHand().get(i).suit() + "/" + player.getHand().get(i).cardSymbol().name().toLowerCase() + ".png";
+            handPaths[i] = "src/main/resources/assets/PlayingCards/PNG-cards-1.3/" + player.getHand().get(i).suit() + "/" + player.getHand().get(i).cardSymbol().name().toLowerCase() + ".png";
     }
     return handPaths;
    }
@@ -106,10 +115,22 @@ public class Blackjack implements CardGame{
    public String[] getDealerCards() {
     String[] handPaths = new String[dealer.getHand().size()];
     for (int i = 0; i < handPaths.length; i++) {
-            handPaths[i] = "assets/PlayingCards/PNG-cards-1.3/" + player.getHand().get(i).suit() + "/" + player.getHand().get(i).cardSymbol().name().toLowerCase() + ".png";
+            handPaths[i] = "src/main/resources/assets/PlayingCards/PNG-cards-1.3/" + dealer.getHand().get(i).suit() + "/" + dealer.getHand().get(i).cardSymbol().name().toLowerCase() + ".png";
     }
     return handPaths;
    }    
+
+   public String getPlayerName() {
+        return player.getUsername();
+   }
+
+   public Player getPlayer() {
+    return player;
+   }
+   
+   public Player getDealer() {
+    return dealer;
+   }
 }
 
 

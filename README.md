@@ -21,3 +21,4 @@ Designer:
 - Bastian Oppermann: [Javacord](https://github.com/Javacord/Javacord)
 - Google: [GSON](https://github.com/google/gson)
 - Cdimascio: [Dotenv](https://github.com/cdimascio/dotenv-java)
+- Peter Waiser: https://stackoverflow.com/questions/2318020/merging-two-images/2319251#2319251
