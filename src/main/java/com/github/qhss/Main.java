@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class Main {
-    private static HashMap<String, CompletableFuture<Message>> userMessage = new HashMap<String, CompletableFuture<Message>>();
+    private static HashMap<String, Blackjack> userGame = new HashMap<String, Blackjack>();
 
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
@@ -124,11 +124,19 @@ public class Main {
                 });
     }
 
-    public static boolean removeMessage(String username) {
+    public static boolean removeGame(String username) {
+        if (userGame.containsKey(username)) {
+            userGame.remove(username);
+            return true;
+        }
         return false;
     }
 
-    public static void addMessage(String username, CompletableFuture<Message> msg) {
-        userMessage.put(username, msg);
+    public static void addGame(String username, Blackjack bj) {
+        userGame.put(username, bj);
+    }
+
+    public static HashMap<String, Blackjack> getGame() {
+        return userGame;
     }
 }
