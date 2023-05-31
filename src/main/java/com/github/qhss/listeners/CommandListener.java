@@ -61,6 +61,11 @@ public class CommandListener implements SlashCommandCreateListener {
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
                                 }
+
+                                Player player = bj.getPlayer();
+                                player.setMoney(player.getMoney() - bj.getBetAmount());
+                                JsonUtils.changeMoney(playerName, player);
+
                                 EmbedBuilder embed =
                                 new EmbedBuilder()
                                         .setTitle("Blackjack")
@@ -69,7 +74,7 @@ public class CommandListener implements SlashCommandCreateListener {
                                         .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
                                         .setColor(Color.CYAN)
                                         .setFooter(
-                                                "Your bet: $" + s.getDecimalValue().get())
+                                                "Your bet: $" + bj.getBetAmount())
                                         .setImage(new File("src/main/resources/assets/combined.png"))
                                         .setThumbnail(
                                                 new File(
@@ -88,6 +93,9 @@ public class CommandListener implements SlashCommandCreateListener {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
                         }
+                        Player player = bj.getPlayer();
+                        player.setMoney(player.getMoney() - bj.getBetAmount());
+                        JsonUtils.changeMoney(playerName, player);
                         EmbedBuilder embed =
                                 new EmbedBuilder()
                                         .setTitle("Blackjack")

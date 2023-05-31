@@ -74,4 +74,15 @@ public class JsonUtils {
         }
         return false;
     }
+
+    public static boolean changeMoney(String username, Player player) {
+        Player[] players = read();
+        if (findPlayer(players, username) != -1) {
+                players[findPlayer(players, username)] = player;
+                write(players);
+                return true;
+        }
+        return false;
+    }
+    
 }
