@@ -84,7 +84,7 @@ public class Main {
                 g.drawImage(dealer2, 510, 30, null); // actual card
         }
         else {
-                int xDealer = background.getWidth() / bj.getDealerCards().length - 120;
+                int xDealer = background.getWidth() / 2 - (bj.getDealerCards().length * 60);
         
                 for (int i = 0; i < bj.getDealerCards().length; i++) {
                         g.drawImage(ImageIO.read(new File(bj.getDealerCards()[i])), xDealer, 40, null);
@@ -92,7 +92,7 @@ public class Main {
                 }
         }
 
-        int xPlayer = background.getWidth() / bj.getPlayerCards().length - 120;
+        int xPlayer = background.getWidth() / 2 - (bj.getPlayerCards().length * 60);
         
         
         for (int i = 0; i < bj.getPlayerCards().length; i++) {
