@@ -45,7 +45,7 @@ bin/
 .env
 
 ### Balance ###
-./src/main/resources/balance.json
+src/main/resources/balance.json
 
 ### Generated Images ###
-./src/main/resources/assets/*.png
+src/main/resources/assets/*.png
