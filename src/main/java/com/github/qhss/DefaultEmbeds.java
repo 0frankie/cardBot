@@ -52,23 +52,22 @@ public interface DefaultEmbeds {
                 );
     }
 
-    static EmbedBuilder finalEmbed(String message, String username, Blackjack bj) {
+    static EmbedBuilder finalEmbed(String message, String username, Blackjack bj, int change) {
         String finalMsg = message.contains("won") ? "You won: " : message.contains("lost") ? "You lost: " : "You tied.";
-        return
-                    new EmbedBuilder()
-                            .setTitle("Blackjack")
-                            .setDescription(message)
-                            .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
-                            .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                            .addInlineField(message + ": ", String.valueOf(5 * bj.getBetAmount()))
-                            .setColor(Color.CYAN)
-                            .setFooter(
-                                    "Your bet: $" + Main.getGame().get(username).getBetAmount())
-                            .setImage(new File("src/main/resources/assets/combined.png"))
-                            .setThumbnail(
-                                    new File(
-                                            Main.getClassLoader()
-                                                    .getResource("assets/profile.png")
-                                                    .getFile()));
+        return new EmbedBuilder()
+                .setTitle("Blackjack")
+                .setDescription(message)
+                .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
+                .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
+                .addInlineField(finalMsg, String.valueOf(change))
+                .setColor(Color.CYAN)
+                .setFooter(
+                        "Your bet: $" + bj.getBetAmount())
+                .setImage(new File("src/main/resources/assets/combined.png"))
+                .setThumbnail(
+                        new File(
+                                Main.getClassLoader()
+                                        .getResource("assets/profile.png")
+                                        .getFile()));
     }
 }

@@ -42,7 +42,8 @@ public class CommandListener implements SlashCommandCreateListener {
                                 slashCommandInteraction.createImmediateResponder().setContent("Added! Your init balance: $1000").respond();
                         }
                         else {
-                                slashCommandInteraction.createImmediateResponder().setContent("You're already in the balance sheet!").respond();
+                                array[JsonUtils.findPlayer(array, playerName)].setMoney(1000);
+                                slashCommandInteraction.createImmediateResponder().setContent("Your balance is reset!").respond();
                         }
                         return;
                     }
@@ -64,6 +65,7 @@ public class CommandListener implements SlashCommandCreateListener {
                                 return;
                         }
                         Blackjack bj = new Blackjack(array[JsonUtils.findPlayer(array, playerName)], s.getDecimalValue().get().intValue());
+                        Main.getGame().put(playerName, bj);
                         if (bj.getScore(bj.getPlayer()) == 21) {
                                 try {
                                         Main.appendImages(bj, true);
@@ -77,11 +79,14 @@ public class CommandListener implements SlashCommandCreateListener {
                                 JsonUtils.changeMoney(playerName, player);
 
                                 new MessageBuilder().setEmbed(
-                                DefaultEmbeds.finalEmbed("You've got Blackjack and won!", playerName, bj))
+                                DefaultEmbeds.finalEmbed("You've got Blackjack and won!", playerName, bj, (int) (2.5 * bj.getBetAmount())))
                                         .send(slashCommandInteraction.getChannel().get());
+                                Main.getGame().remove(playerName);
+
+                                // ignores error msg
+                                slashCommandInteraction.createImmediateResponder().respond();
                                 return;
                         }
-                        Main.getGame().put(playerName, bj);
                         try {
                                 Main.appendImages(bj, false);
                         } catch (IOException e) {
@@ -92,6 +97,7 @@ public class CommandListener implements SlashCommandCreateListener {
                         JsonUtils.changeMoney(playerName, player);
                         DefaultEmbeds.defaultMessage("Play Blackjack against dealer!", slashCommandInteraction.getUser(), bj)
                                 .send(slashCommandInteraction.getChannel().get());
+                        slashCommandInteraction.createImmediateResponder().respond();
                     }
                 
     }

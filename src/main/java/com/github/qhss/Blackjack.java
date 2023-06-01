@@ -50,7 +50,6 @@ public class Blackjack implements CardGame{
 
   public boolean doubleDown() {
        if (player.getHand().size() == 2) {
-           this.betAmount *= 2;
            player.addToHand(deck.getTop());
            player.changeTurn(false);
            return true;

@@ -2,22 +2,20 @@ package com.github.qhss;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.intent.Intent;
-import org.javacord.api.interaction.*;
-
 import com.github.qhss.listeners.ButtonListener;
 import com.github.qhss.listeners.CommandListener;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
 import javax.imageio.ImageIO;
 
 public class Main implements CommandsInit {
     private static HashMap<String, Blackjack> userGame = new HashMap<String, Blackjack>();
+    private static HashMap<String, TextChannel> userChannel = new HashMap<String, TextChannel>();
 
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
@@ -38,12 +36,8 @@ public class Main implements CommandsInit {
         CommandsInit.init(api);
     }
 
-    public static boolean removeGame(String username) {
-        if (userGame.containsKey(username)) {
-            userGame.remove(username);
-            return true;
-        }
-        return false;
+    public static HashMap<String, TextChannel> getChannel() {
+        return userChannel;
     }
 
     public static HashMap<String, Blackjack> getGame() {
@@ -60,15 +54,16 @@ public class Main implements CommandsInit {
         // paint both images, preserving the alpha channels
         Graphics g = combined.getGraphics();
         g.drawImage(background, 0, 0, null);
+
+        int xDealer = background.getWidth() / 2 - (bj.getDealerCards().length * 60);
+
         if (!fin) {
                 BufferedImage hidden = ImageIO.read(new File("src/main/resources/assets/Back.png"));
-                BufferedImage dealer2 = ImageIO.read(new File(bj.getDealerCards()[1]));
-                g.drawImage(hidden, 360, 40, null); // hidden card
-                g.drawImage(dealer2, 510, 30, null); // actual card
+                BufferedImage dealer2 = ImageIO.read(new File(bj.getDealerCards()[1])); 
+                g.drawImage(hidden, xDealer, 40, null); // hidden card
+                g.drawImage(dealer2, xDealer + 120, 40, null); // actual card
         }
         else {
-                int xDealer = background.getWidth() / 2 - (bj.getDealerCards().length * 60);
-        
                 for (int i = 0; i < bj.getDealerCards().length; i++) {
                         g.drawImage(ImageIO.read(new File(bj.getDealerCards()[i])), xDealer, 40, null);
                         xDealer += 120;
@@ -87,6 +82,5 @@ public class Main implements CommandsInit {
 
         // Save as new image
         ImageIO.write(combined, "PNG", new File("src/main/resources/assets/combined.png"));
-
     }
 }
