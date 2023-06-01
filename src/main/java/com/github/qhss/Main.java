@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Set;
 import javax.imageio.ImageIO;
 
-public class Main {
+public class Main implements CommandsInit {
     private static HashMap<String, Blackjack> userGame = new HashMap<String, Blackjack>();
 
     public static ClassLoader getClassLoader() {
@@ -34,25 +34,8 @@ public class Main {
         api.addListener(bListener);
         api.addListener(cListener);
 
-        
-        /*
-         * think these only need to be run once but not sure
-         * will refactor later (maybe) 
-        */
-        SlashCommand games =
-                SlashCommand.with(
-                        "cb",
-                        "Card games",
-                        Arrays.asList(
-                                SlashCommandOption.createDecimalOption("bj", "Plays a game of Blackjack", true, 1, 10000)))
-                        .createGlobal(api)
-                        .join();
-
-        SlashCommand daily = SlashCommand.with("cbdaily", "Claims daily money for Card Bot")
-                .createGlobal(api)
-                .join();
-
-        Set<SlashCommand> commands = api.getGlobalSlashCommands().join();
+        // Only needs to run once
+        CommandsInit.init(api);
     }
 
     public static boolean removeGame(String username) {

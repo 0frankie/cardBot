@@ -1,19 +1,16 @@
 package com.github.qhss.listeners;
 
-import java.awt.Color;
-import java.io.File;
 import java.io.IOException;
+
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageFlag;
-import org.javacord.api.entity.message.component.ActionRow;
-import org.javacord.api.entity.message.component.Button;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 
 import com.github.qhss.Blackjack;
+import com.github.qhss.DefaultEmbeds;
 import com.github.qhss.JsonUtils;
 import com.github.qhss.Main;
 import com.github.qhss.Player;
@@ -40,11 +37,24 @@ public class CommandListener implements SlashCommandCreateListener {
                         return;
                     }
 
-                    if (slashCommandInteraction.getCommandName().equals("cbaddplr")) {
+                    if (slashCommandInteraction.getCommandName().equals("cbaddself")) {
                         if (JsonUtils.addPlayer(playerName)) {
-                                slashCommandInteraction.createImmediateResponder().setContent("Added! Your init balance: $1000");
+                                slashCommandInteraction.createImmediateResponder().setContent("Added! Your init balance: $1000").respond();
                         }
+                        else {
+                                slashCommandInteraction.createImmediateResponder().setContent("You're already in the balance sheet!").respond();
+                        }
+                        return;
+                    }
 
+                    if (slashCommandInteraction.getCommandName().equals("cbbalance")) {
+                        if (plrIndex != -1) {
+                                slashCommandInteraction.createImmediateResponder().setContent("Your balance: $" + array[plrIndex].getMoney()).respond();
+                        }
+                        else {
+                                slashCommandInteraction.createImmediateResponder().setContent("Add yourself to the balance sheet first!").respond();
+                        }
+                        return;
                     }
                     SlashCommandInteractionOption s = slashCommandInteraction.getOptions().get(0);
 
@@ -63,66 +73,24 @@ public class CommandListener implements SlashCommandCreateListener {
                                 }
 
                                 Player player = bj.getPlayer();
-                                player.setMoney(player.getMoney() - bj.getBetAmount());
+                                player.setMoney(player.getMoney() + (int) (2.5 * bj.getBetAmount()));
                                 JsonUtils.changeMoney(playerName, player);
 
-                                EmbedBuilder embed =
-                                new EmbedBuilder()
-                                        .setTitle("Blackjack")
-                                        .setDescription("You've got Blackjack!")
-                                        .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
-                                        .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                        .setColor(Color.CYAN)
-                                        .setFooter(
-                                                "Your bet: $" + bj.getBetAmount())
-                                        .setImage(new File("src/main/resources/assets/combined.png"))
-                                        .setThumbnail(
-                                                new File(
-                                                        Main.getClassLoader()
-                                                                .getResource("assets/profile.png")
-                                                                .getFile()));
-                        new MessageBuilder()
-                                .setEmbed(embed)
-                                .send(slashCommandInteraction.getChannel().get());
+                                new MessageBuilder().setEmbed(
+                                DefaultEmbeds.finalEmbed("You've got Blackjack and won!", playerName, bj))
+                                        .send(slashCommandInteraction.getChannel().get());
                                 return;
                         }
                         Main.getGame().put(playerName, bj);
                         try {
-                                Main.beginningBoard(bj);
+                                Main.appendImages(bj, false);
                         } catch (IOException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
                         }
                         Player player = bj.getPlayer();
-                        player.setMoney(player.getMoney() - bj.getBetAmount());
                         JsonUtils.changeMoney(playerName, player);
-                        EmbedBuilder embed =
-                                new EmbedBuilder()
-                                        .setTitle("Blackjack")
-                                        .setDescription("Play against the dealer!")
-                                        .addField("Dealer's Cards: ", "VALUE")
-                                        .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                        .setColor(Color.CYAN)
-                                        .setFooter(
-                                                "Your bet: $" + s.getDecimalValue().get())
-                                        .setImage(new File("src/main/resources/assets/beginning.png"))
-                                        .setThumbnail(
-                                                new File(
-                                                        Main.getClassLoader()
-                                                                .getResource("assets/profile.png")
-                                                                .getFile()));
-
-                        
-                        new MessageBuilder()
-                                .setEmbed(embed)
-                                .addComponents(
-                                        ActionRow.of(
-                                                Button.success("hit", "Hit", "👏", false),
-                                                Button.primary("stand", "Stand", "🧍", false),
-                                                Button.danger("double-down", "Double Down", "🤑", false),
-                                                Button.secondary("exit", "Exit", "🚪", false)
-                                        )
-                                )
+                        DefaultEmbeds.defaultMessage("Play Blackjack against dealer!", slashCommandInteraction.getUser(), bj)
                                 .send(slashCommandInteraction.getChannel().get());
                     }
                 

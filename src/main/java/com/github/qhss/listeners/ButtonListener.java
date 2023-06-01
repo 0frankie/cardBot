@@ -1,22 +1,14 @@
 package com.github.qhss.listeners;
 
-import java.awt.Color;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageFlag;
-import org.javacord.api.entity.message.component.ActionRow;
-import org.javacord.api.entity.message.component.Button;
-import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.interaction.ButtonClickEvent;
 import org.javacord.api.listener.interaction.ButtonClickListener;
 
 import com.github.qhss.Blackjack;
+import com.github.qhss.DefaultEmbeds;
 import com.github.qhss.JsonUtils;
 import com.github.qhss.Main;
 import com.github.qhss.Player;
@@ -28,7 +20,6 @@ public class ButtonListener implements ButtonClickListener {
         HashMap<String, Blackjack> games = Main.getGame();
         String username = event.getButtonInteraction().getUser().getDiscriminatedName();
 
-        System.out.println(event.getButtonInteraction().getCustomId());
         if (games.containsKey(username)) {
             Blackjack bj = games.get(username);
             switch (event.getButtonInteraction().getCustomId()) {
@@ -36,17 +27,22 @@ public class ButtonListener implements ButtonClickListener {
                     String message = "";
                     bj.stand();
                     bj.dealerPlay();
+                    int bet = bj.getBetAmount();
 
-                    if (bj.checkWinner() == 1) {
+                    if (bj.getScore(bj.getDealer()) == 21) {
+                        message = "You lost! Dealer got Blackjack!";
+                        bet = (int) (2.5 * bet);
+                    }
+                    else if (bj.checkWinner() == 1) {
                         message = "You won!";
                     }
                     else if (bj.checkWinner() == 0) {
                         message = "You lost!";
-                        bj.setBetAmount(-bj.getBetAmount());
+                        bet = -bet;
                     }
                     else {
                         message = "You tied!";
-                        bj.setBetAmount(0);
+                        bet = 0;
                     }
                     try {
                         Main.appendImages(bj, true);
@@ -56,34 +52,20 @@ public class ButtonListener implements ButtonClickListener {
                     }
 
                     Player player = bj.getPlayer();
-                    player.setMoney(player.getMoney() - bj.getBetAmount());
+                    player.setMoney(player.getMoney() + bet);
                     JsonUtils.changeMoney(username, player);
 
                     if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
                         event.getButtonInteraction().getMessage().delete();
-                        EmbedBuilder embed =
-                                    new EmbedBuilder()
-                                            .setTitle("Blackjack")
-                                            .setDescription(message)
-                                            .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
-                                            .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                            .setColor(Color.CYAN)
-                                            .setFooter(
-                                                    "Your bet: $" + games.get(username).getBetAmount())
-                                            .setImage(new File("src/main/resources/assets/combined.png"))
-                                            .setThumbnail(
-                                                    new File(
-                                                            Main.getClassLoader()
-                                                                    .getResource("assets/profile.png")
-                                                                    .getFile()));
                             new MessageBuilder()
-                                .setEmbed(embed)
+                                .setEmbed(DefaultEmbeds.finalEmbed(message, username, bj))
                                 .send(event.getButtonInteraction().getChannel().get());
                             Main.getGame().remove(username);
                     }
                     break;
                 }
                 case "hit": {
+                    event.getButtonInteraction().getMessage().delete();
                     if (!bj.hit()) {
                         try {
                             Main.appendImages(bj, true);
@@ -91,30 +73,33 @@ public class ButtonListener implements ButtonClickListener {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
-                        Main.getGame().remove(username);
+
                         Player player = bj.getPlayer();
                         player.setMoney(player.getMoney() - bj.getBetAmount());
                         JsonUtils.changeMoney(username, player);
                         
-                        EmbedBuilder embed =
-                                    new EmbedBuilder()
-                                            .setTitle("Blackjack")
-                                            .setDescription("You hit and lost!")
-                                            .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
-                                            .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                            .setColor(Color.CYAN)
-                                            .setFooter(
-                                                    "Your bet: $" + games.get(username).getBetAmount())
-                                            .setImage(new File("src/main/resources/assets/combined.png"))
-                                            .setThumbnail(
-                                                    new File(
-                                                            Main.getClassLoader()
-                                                                    .getResource("assets/profile.png")
-                                                                    .getFile()));
                         new MessageBuilder()
-                                .setEmbed(embed)
+                                .setEmbed(DefaultEmbeds.finalEmbed("You hit and lost!", username, bj))
                                 .send(event.getButtonInteraction().getChannel().get());                                
-                        
+                        Main.getGame().remove(username);
+                        break;
+                    }
+                    if (bj.getPlayer().getHand().size() == 5) {
+                        try {
+                            Main.appendImages(bj, true);
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+
+                        Player player = bj.getPlayer();
+                        player.setMoney(player.getMoney() + bj.getBetAmount());
+                        JsonUtils.changeMoney(username, player);
+
+                        new MessageBuilder()
+                                .setEmbed(DefaultEmbeds.finalEmbed("You hit and got 5 in a row, so you won!", username, bj))
+                                .send(event.getButtonInteraction().getChannel().get());                                
+                        Main.getGame().remove(username);
                         break;
                     }
                     try {
@@ -126,59 +111,17 @@ public class ButtonListener implements ButtonClickListener {
 
                     if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
                         if (bj.getScore(bj.getPlayer()) == 21) {
-                            event.getButtonInteraction().getMessage().delete();
-                            
                             Player player = bj.getPlayer();
                             player.setMoney(player.getMoney() + bj.getBetAmount());
                             JsonUtils.changeMoney(username, player);
 
                             Main.getGame().remove(username);
-                            EmbedBuilder embed =
-                                    new EmbedBuilder()
-                                            .setTitle("Blackjack")
-                                            .setDescription("You hit and got 21!")
-                                            .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                            .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                            .setColor(Color.CYAN)
-                                            .setFooter(
-                                                    "Your bet: $" + games.get(username).getBetAmount())
-                                            .setImage(new File("src/main/resources/assets/combined.png"))
-                                            .setThumbnail(
-                                                    new File(
-                                                            Main.getClassLoader()
-                                                                    .getResource("assets/profile.png")
-                                                                    .getFile()));
                             new MessageBuilder()
-                                .setEmbed(embed)
+                                .setEmbed(DefaultEmbeds.finalEmbed("You hit and got 21!", username, bj))
                                 .send(event.getButtonInteraction().getChannel().get());
                                 break;
                         }
-                        event.getButtonInteraction().getMessage().delete();
-                        EmbedBuilder embed =
-                                    new EmbedBuilder()
-                                            .setTitle("Blackjack")
-                                            .setDescription("You hit!")
-                                            .addField("Dealer's Cards: ", "VALUE?!?")
-                                            .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                            .setColor(Color.CYAN)
-                                            .setFooter(
-                                                    "Your bet: $" + games.get(username).getBetAmount())
-                                            .setImage(new File("src/main/resources/assets/combined.png"))
-                                            .setThumbnail(
-                                                    new File(
-                                                            Main.getClassLoader()
-                                                                    .getResource("assets/profile.png")
-                                                                    .getFile()));
-                            new MessageBuilder()
-                                .setEmbed(embed)
-                                .addComponents(
-                                        ActionRow.of(
-                                                Button.success("hit", "Hit", "👏", false),
-                                                Button.primary("stand", "Stand", "🧍", false),
-                                                Button.danger("double-down", "Double Down", "🤑", false),
-                                                Button.secondary("exit", "Exit", "🚪", false)
-                                        )
-                                )
+                            DefaultEmbeds.defaultMessage("You hit!", event.getButtonInteraction().getUser(), bj)
                                 .send(event.getButtonInteraction().getChannel().get());
                     }
                     break;
@@ -190,33 +133,18 @@ public class ButtonListener implements ButtonClickListener {
                  */
                 case "double-down": {
                     if (!bj.doubleDown()) {
-                        event.getButtonInteraction().createImmediateResponder().setContent("You've already picked up! Not allowed to do that!");
+                        event.getButtonInteraction().createImmediateResponder().setContent("You've already picked up! Not allowed to do that!").setFlags(MessageFlag.EPHEMERAL).respond();
                         break;
                     }
                     if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
                         event.getButtonInteraction().getMessage().delete();
 
                         if (bj.getScore(bj.getDealer()) == 21) {
-                            EmbedBuilder embed =
-                                    new EmbedBuilder()
-                                            .setTitle("Blackjack")
-                                            .setDescription("You doubled-down and lost to Blackjack!")
-                                            .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
-                                            .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                            .setColor(Color.CYAN)
-                                            .setFooter(
-                                                    "Your bet: $" + games.get(username).getBetAmount())
-                                            .setImage(new File("src/main/resources/assets/combined.png"))
-                                            .setThumbnail(
-                                                    new File(
-                                                            Main.getClassLoader()
-                                                                    .getResource("assets/profile.png")
-                                                                    .getFile()));
                             Player player = bj.getPlayer();
-                            player.setMoney(player.getMoney() - 4 * bj.getBetAmount());
+                            player.setMoney(player.getMoney() - 5 * bj.getBetAmount());
                             JsonUtils.changeMoney(username, player);
                             new MessageBuilder()
-                                .setEmbed(embed)
+                                .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down and lost to Blackjack!", username, bj))
                                 .send(event.getButtonInteraction().getChannel().get());
 
                             Main.getGame().remove(username);
@@ -230,41 +158,27 @@ public class ButtonListener implements ButtonClickListener {
                             e.printStackTrace();
                         }
 
+                        int bet = bj.getBetAmount();
+
                         String message = "";
                         if (bj.checkWinner() == 1) {
                             message = "you won!";
                         }
                         else if (bj.checkWinner() == 0) {
                             message = "you lost!";
-                            bj.setBetAmount(-bj.getBetAmount());
+                            bet = -bet;
                         }
                         else {
                             message = "you tied!";
-                            bj.setBetAmount(0);
+                            bet = 0;
                         }
 
                         Player player = bj.getPlayer();
-                        player.setMoney(player.getMoney() - bj.getBetAmount());
+                        player.setMoney(player.getMoney() + 2 * bet);
                         JsonUtils.changeMoney(username, player);
-
-                        EmbedBuilder embed =
-                                    new EmbedBuilder()
-                                            .setTitle("Blackjack")
-                                            .setDescription("You doubled-down" + " and " + message)
-                                            .addField("Dealer's Cards: ", String.valueOf(bj.getScore(bj.getDealer())))
-                                            .addField("Your Cards: ", String.valueOf(bj.getScore(bj.getPlayer())))
-                                            .setColor(Color.CYAN)
-                                            .setFooter(
-                                                    "Your bet: $" + games.get(username).getBetAmount())
-                                            .setImage(new File("src/main/resources/assets/combined.png"))
-                                            .setThumbnail(
-                                                    new File(
-                                                            Main.getClassLoader()
-                                                                    .getResource("assets/profile.png")
-                                                                    .getFile()));
-                            new MessageBuilder()
-                                .setEmbed(embed)
-                                .send(event.getButtonInteraction().getChannel().get());
+                        new MessageBuilder()
+                            .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down" + " and " + message, username, bj))
+                            .send(event.getButtonInteraction().getChannel().get());
 
                             Main.getGame().remove(username);
                     }
