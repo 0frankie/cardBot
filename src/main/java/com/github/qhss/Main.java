@@ -89,33 +89,4 @@ public class Main implements CommandsInit {
         ImageIO.write(combined, "PNG", new File("src/main/resources/assets/combined.png"));
 
     }
-
-    public static void beginningBoard(Blackjack bj) throws IOException {
-
-        // load source images
-        BufferedImage background = ImageIO.read(new File("src/main/resources/assets/table.png"));
-        BufferedImage hidden = ImageIO.read(new File("src/main/resources/assets/Back.png"));
-        BufferedImage dealer2 = ImageIO.read(new File(bj.getDealerCards()[1]));
-
-        // create the new image, canvas size is the max. of both image sizes
-        BufferedImage combined = new BufferedImage(background.getWidth(), background.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        // paint both images, preserving the alpha channels
-        Graphics g = combined.getGraphics();
-        g.drawImage(background, 0, 0, null);
-        
-        g.drawImage(hidden, 360, 40, null); // hidden card
-        g.drawImage(dealer2, 510, 30, null); // actual card
-
-        int index = 0;
-        for (int i = 360; i <= 510; i += 150) {
-                g.drawImage(ImageIO.read(new File(bj.getPlayerCards()[index])), i, 210, null);
-                index++;
-        }
-
-        g.dispose();
-
-        // Save as new image
-        ImageIO.write(combined, "PNG", new File("src/main/resources/assets/beginning.png"));
-    }
 }
