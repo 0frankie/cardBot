@@ -1,7 +1,8 @@
 package com.github.qhss;
 
-import java.util.*;
 import static com.github.qhss.CardSymbol.*;
+
+import java.util.*;
 
 public class Deck {
 
@@ -33,9 +34,5 @@ public class Deck {
         counter = (counter + 1 >= deck.length) ? 0 : counter + 1;
         return deck[counter];
     }
-    
-    public void reset() {
-        shuffle();
-        counter = -1;
-    }
+
 }

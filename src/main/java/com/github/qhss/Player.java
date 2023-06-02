@@ -1,11 +1,11 @@
 package com.github.qhss;
+
 import java.util.*;
 
 public class Player {
-    private transient boolean doubleDown;
     private transient boolean turn;
     private int money;
-    private transient ArrayList<Card> hand = new ArrayList<>();
+    private final transient ArrayList<Card> hand = new ArrayList<>();
 
     private String username;
 
@@ -30,10 +30,6 @@ public class Player {
 
     public String getUsername() {
         return this.username;
-    }
-
-    public boolean isDoubleDown() {
-        return doubleDown;
     }
 
     public boolean isTurn() {

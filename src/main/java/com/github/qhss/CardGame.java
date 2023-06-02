@@ -7,5 +7,5 @@ public interface CardGame {
 
     String turn();
 
-    int checkWinner();
+    String checkWinner();
 }

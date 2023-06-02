@@ -1,21 +1,21 @@
 package com.github.qhss;
 
+import com.google.gson.Gson;
+
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
-
-import com.google.gson.Gson;
 
 public class JsonUtils {
     /**
      * finds a player in the array.
      * returns -1 if not found
      * 
-     * @param   players   the array of players to search in
-     * @param   username  the username of the Player
+     * @param   players     the array of players to search in
+     * @param   username    the username of the Player
      * 
-     * @return          The index of the player if found, else -1
+     * @return              The index of the player if found, else -1
      */
     public static int findPlayer(Player[] players, String username) {
         for (int i = 0; i < players.length; i++) {
@@ -26,13 +26,10 @@ public class JsonUtils {
     }
 
     /**
-     * finds a player in the array.
-     * returns -1 if not found
+     * writes array data to balance sheet
      * 
-     * @param   players   the array of players to search in
-     * @param   username  the username of the Player
-     * 
-     * @return          The index of the player if found, else -1
+     * @param   array   the array of players to write
+     *
      */
     public static void write(Player[] array) {
         try (FileWriter fileWriter = new FileWriter("src/main/resources/balance.json")) {
@@ -43,13 +40,9 @@ public class JsonUtils {
     }
 
     /**
-     * finds a player in the array.
-     * returns -1 if not found
+     * Reads the balance sheet and returns an array of stripped-down Player objects
      * 
-     * @param   players   the array of players to search in
-     * @param   username  the username of the Player
-     * 
-     * @return          The index of the player if found, else -1
+     * @return          Array of stripped-down player objects in balance sheet
      */
     public static Player[] read() {
         try (Reader reader = new FileReader("src/main/resources/balance.json")) {
@@ -59,6 +52,13 @@ public class JsonUtils {
         }
     }
 
+    /**
+     * Writes a user to the balance sheet with balance $1000
+     *
+     * @param   author  writer of the command
+     *
+     * @return          whether adding the player was successful
+     */
     public static boolean addPlayer(String author) {
         Player[] array = read();
         int plrIndex = JsonUtils.findPlayer(array, author);
@@ -75,14 +75,18 @@ public class JsonUtils {
         return false;
     }
 
-    public static boolean changeMoney(String username, Player player) {
+    /**
+     * Writes a user to the balance sheet with balance $1000
+     *
+     * @param   username    writer of the command
+     * @param   player      Player object of writer of command
+     */
+    public static void changeMoney(String username, Player player) {
         Player[] players = read();
         if (findPlayer(players, username) != -1) {
                 players[findPlayer(players, username)] = player;
                 write(players);
-                return true;
         }
-        return false;
     }
     
 }

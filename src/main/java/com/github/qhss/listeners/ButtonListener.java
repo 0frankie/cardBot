@@ -1,30 +1,47 @@
 package com.github.qhss.listeners;
 
-import java.io.IOException;
-import java.util.HashMap;
-import org.javacord.api.entity.message.MessageBuilder;
-import org.javacord.api.entity.message.MessageFlag;
-import org.javacord.api.event.interaction.ButtonClickEvent;
-import org.javacord.api.listener.interaction.ButtonClickListener;
-
 import com.github.qhss.Blackjack;
 import com.github.qhss.DefaultEmbeds;
 import com.github.qhss.JsonUtils;
 import com.github.qhss.Main;
 import com.github.qhss.Player;
 
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.MessageFlag;
+import org.javacord.api.event.interaction.ButtonClickEvent;
+import org.javacord.api.interaction.ButtonInteraction;
+import org.javacord.api.listener.interaction.ButtonClickListener;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.function.Function;
+
 public class ButtonListener implements ButtonClickListener {
 
     @Override
     public void onButtonClick(ButtonClickEvent event) {
         HashMap<String, Blackjack> games = Main.userGame;
-        String username = event.getButtonInteraction().getUser().getDiscriminatedName();
+        ButtonInteraction interaction = event.getButtonInteraction();
+        String username = interaction.getUser().getDiscriminatedName();
+        TextChannel channel = interaction.getChannel().get();
+        Function<String, Void> respond =
+                msg -> {
+                    interaction
+                            .createImmediateResponder()
+                            .setContent(msg)
+                            .setFlags(MessageFlag.EPHEMERAL)
+                            .respond();
+                    return null;
+                };
 
-        if (games.containsKey(username) && Main.channelUser.get(event.getButtonInteraction().getChannel().get()).equals(event.getButtonInteraction().getUser().getDiscriminatedName())) {
+        if (games.containsKey(username) && Main.channelUser.get(channel).equals(username)) {
             Blackjack bj = games.get(username);
-            switch (event.getButtonInteraction().getCustomId()) {
-                case "stand": {
-                    String message = "";
+            Player player = bj.getPlayer();
+
+            switch (interaction.getCustomId()) {
+                case "stand" -> {
+                    String message;
                     bj.stand();
                     bj.dealerPlay();
                     int bet = bj.getBetAmount();
@@ -32,17 +49,12 @@ public class ButtonListener implements ButtonClickListener {
                     if (bj.getScore(bj.getDealer()) == 21 && bj.getDealerCards().length == 2) {
                         message = "You lost! Dealer got Blackjack!";
                         bet = (int) (-2.5 * bet);
-                    }
-                    else if (bj.checkWinner() == 1) {
-                        message = "You won!";
-                    }
-                    else if (bj.checkWinner() == 0) {
-                        message = "You lost!";
-                        bet = -bet;
-                    }
-                    else {
-                        message = "You tied!";
-                        bet = 0;
+                    } else {
+                        message = bj.checkWinner();
+                        bet =
+                                message.contains("won")
+                                        ? bj.getBetAmount()
+                                        : message.contains("lost") ? -bj.getBetAmount() : 0;
                     }
                     try {
                         Main.appendImages(bj, true, username);
@@ -51,22 +63,21 @@ public class ButtonListener implements ButtonClickListener {
                         e.printStackTrace();
                     }
 
-                    Player player = bj.getPlayer();
                     player.setMoney(player.getMoney() + bet);
                     JsonUtils.changeMoney(username, player);
 
-                    if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
-                        event.getButtonInteraction().getMessage().delete();
-                            new MessageBuilder()
-                                .setEmbed(DefaultEmbeds.finalEmbed(message, username, bj, Math.abs(bet)))
-                                .send(event.getButtonInteraction().getChannel().get());
-                            Main.userGame.remove(username);
-                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                    if (games.containsKey(username)) {
+                        interaction.getMessage().delete();
+                        new MessageBuilder()
+                                .setEmbed(
+                                        DefaultEmbeds.finalEmbed(
+                                                message, username, bj, Math.abs(bet)))
+                                .send(channel);
+                        Main.removeFromMaps(username, channel);
                     }
-                    break;
                 }
-                case "hit": {
-                    event.getButtonInteraction().getMessage().delete();
+                case "hit" -> {
+                    interaction.getMessage().delete();
                     if (!bj.hit()) {
                         try {
                             Main.appendImages(bj, true, username);
@@ -75,15 +86,18 @@ public class ButtonListener implements ButtonClickListener {
                             e.printStackTrace();
                         }
 
-                        Player player = bj.getPlayer();
                         player.setMoney(player.getMoney() - bj.getBetAmount());
                         JsonUtils.changeMoney(username, player);
-                        
+
                         new MessageBuilder()
-                                .setEmbed(DefaultEmbeds.finalEmbed("You hit and lost!", username, bj, bj.getBetAmount()))
-                                .send(event.getButtonInteraction().getChannel().get());                                
-                        Main.userGame.remove(username);
-                        Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                                .setEmbed(
+                                        DefaultEmbeds.finalEmbed(
+                                                "You hit and lost!",
+                                                username,
+                                                bj,
+                                                bj.getBetAmount()))
+                                .send(channel);
+                        Main.removeFromMaps(username, channel);
                         break;
                     }
                     if (bj.getPlayer().getHand().size() == 5) {
@@ -94,57 +108,61 @@ public class ButtonListener implements ButtonClickListener {
                             e.printStackTrace();
                         }
 
-                        Player player = bj.getPlayer();
                         player.setMoney(player.getMoney() + bj.getBetAmount());
                         JsonUtils.changeMoney(username, player);
 
                         new MessageBuilder()
-                                .setEmbed(DefaultEmbeds.finalEmbed("You hit and got 5 in a row, so you won!", username, bj, bj.getBetAmount()))
-                                .send(event.getButtonInteraction().getChannel().get());                                
-                        Main.userGame.remove(username);
-                        Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                                .setEmbed(
+                                        DefaultEmbeds.finalEmbed(
+                                                "You hit and got 5 in a row, so you won!",
+                                                username,
+                                                bj,
+                                                bj.getBetAmount()))
+                                .send(channel);
+                        Main.removeFromMaps(username, channel);
                         break;
                     }
 
-                    if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
+                    if (games.containsKey(username)) {
                         if (bj.getScore(bj.getPlayer()) == 21) {
                             try {
                                 Main.appendImages(bj, true, username);
                             } catch (Exception e) {
                                 // TODO: handle exception
                             }
-                            Player player = bj.getPlayer();
                             player.setMoney(player.getMoney() + bj.getBetAmount());
                             JsonUtils.changeMoney(username, player);
 
-                            Main.userGame.remove(username);
-                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                            Main.removeFromMaps(username, channel);
                             new MessageBuilder()
-                                .setEmbed(DefaultEmbeds.finalEmbed("You hit and won by getting 21!", username, bj, bj.getBetAmount()))
-                                .send(event.getButtonInteraction().getChannel().get());
-                                break;
+                                    .setEmbed(
+                                            DefaultEmbeds.finalEmbed(
+                                                    "You hit and won by getting 21!",
+                                                    username,
+                                                    bj,
+                                                    bj.getBetAmount()))
+                                    .send(channel);
+                            break;
                         }
-                            DefaultEmbeds.defaultMessage("You hit!", event.getButtonInteraction().getUser(), bj)
-                                .send(event.getButtonInteraction().getChannel().get());
+                        DefaultEmbeds.defaultMessage("You hit!", interaction.getUser(), bj)
+                                .send(channel);
                     }
-                    break;
-                    
                 }
 
-                /*
-                 * Only 2 cards: draw 1 card, stand
-                 */
-                case "double-down": {
+                    /*
+                     * Only 2 cards: draw 1 card, stand
+                     */
+                case "double-down" -> {
                     if (bj.getPlayer().getMoney() < 2 * bj.getBetAmount()) {
-                        event.getButtonInteraction().createImmediateResponder().setContent("You can't double down with not enough money!").setFlags(MessageFlag.EPHEMERAL).respond();
+                        respond.apply("You can't double down with not enough money!");
                         break;
                     }
                     if (!bj.doubleDown()) {
-                        event.getButtonInteraction().createImmediateResponder().setContent("You've already picked up! Not allowed to do that!").setFlags(MessageFlag.EPHEMERAL).respond();
+                        respond.apply("You've already picked up! Not allowed to do that!");
                         break;
                     }
-                    if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
-                        event.getButtonInteraction().getMessage().delete();
+                    if (games.containsKey(username)) {
+                        interaction.getMessage().delete();
                         try {
                             Main.appendImages(bj, true, username);
                         } catch (IOException e) {
@@ -153,28 +171,34 @@ public class ButtonListener implements ButtonClickListener {
                         }
 
                         if (bj.getScore(bj.getDealer()) == 21) {
-                            Player player = bj.getPlayer();
                             player.setMoney(player.getMoney() - 5 * bj.getBetAmount());
                             JsonUtils.changeMoney(username, player);
                             new MessageBuilder()
-                                .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down and lost to Blackjack!", username, bj, 5 * bj.getBetAmount()))
-                                .send(event.getButtonInteraction().getChannel().get());
+                                    .setEmbed(
+                                            DefaultEmbeds.finalEmbed(
+                                                    "You doubled-down and lost to Blackjack!",
+                                                    username,
+                                                    bj,
+                                                    5 * bj.getBetAmount()))
+                                    .send(channel);
 
-                            Main.userGame.remove(username);
-                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                            Main.removeFromMaps(username, channel);
                             break;
                         }
 
-                        if (bj.checkWinner() == 0) {
-                            Player player = bj.getPlayer();
+                        if (bj.checkWinner().contains("lost")) {
                             player.setMoney(player.getMoney() - 2 * bj.getBetAmount());
                             JsonUtils.changeMoney(username, player);
                             new MessageBuilder()
-                                .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down and lost!", username, bj, 2 * bj.getBetAmount()))
-                                .send(event.getButtonInteraction().getChannel().get());
+                                    .setEmbed(
+                                            DefaultEmbeds.finalEmbed(
+                                                    "You doubled-down and lost!",
+                                                    username,
+                                                    bj,
+                                                    2 * bj.getBetAmount()))
+                                    .send(channel);
 
-                            Main.userGame.remove(username);
-                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                            Main.removeFromMaps(username, channel);
                             break;
                         }
                         bj.dealerPlay();
@@ -186,52 +210,42 @@ public class ButtonListener implements ButtonClickListener {
                             e.printStackTrace();
                         }
 
-                        int bet = bj.getBetAmount();
+                        String message = bj.checkWinner();
+                        int bet =
+                                message.contains("won")
+                                        ? bj.getBetAmount()
+                                        : message.contains("lost") ? -bj.getBetAmount() : 0;
 
-                        String message = "";
-                        if (bj.checkWinner() == 1) {
-                            message = "you won!";
-                        }
-                        else if (bj.checkWinner() == 0) {
-                            message = "you lost!";
-                            bet = -bet;
-                        }
-                        else {
-                            message = "you tied!";
-                            bet = 0;
-                        }
-
-                        Player player = bj.getPlayer();
                         player.setMoney(player.getMoney() + 2 * bet);
                         JsonUtils.changeMoney(username, player);
 
                         new MessageBuilder()
-                            .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down" + " and " + message, username, bj, Math.abs(2 * bj.getBetAmount())))
-                            .send(event.getButtonInteraction().getChannel().get());
+                                .setEmbed(
+                                        DefaultEmbeds.finalEmbed(
+                                                "You doubled-down" + " and " + message,
+                                                username,
+                                                bj,
+                                                Math.abs(2 * bj.getBetAmount())))
+                                .send(channel);
 
-                            Main.userGame.remove(username);
-                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                        Main.removeFromMaps(username, channel);
                     }
-                    break;
                 }
-                case "exit": {
+                case "exit" -> {
                     if (games.containsKey(username)) {
-                        if (games.get(username).getDealerCards().length == 2 && games.get(username).getPlayerCards().length == 2) {
-                            event.getButtonInteraction().getMessage().delete();
-                            event.getButtonInteraction().createImmediateResponder().setContent("Exited game").setFlags(MessageFlag.EPHEMERAL).respond();
-                            Main.userGame.remove(username);
-                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                        if (games.get(username).getDealerCards().length == 2
+                                && games.get(username).getPlayerCards().length == 2) {
+                            interaction.getMessage().delete();
+                            respond.apply("Exited game");
+                            Main.removeFromMaps(username, channel);
                             break;
                         }
                     }
-                    event.getButtonInteraction().createImmediateResponder().setContent("You're either not the player or you already began playing!").setFlags(MessageFlag.EPHEMERAL).respond();
-                    break;
+                    respond.apply("You're either not the player or you already began playing!");
                 }
-            }    
-        }
-        else {
-            event.getButtonInteraction().createImmediateResponder().setContent("You're not playing this game! Start your own with /cb").respond();
+            }
+        } else {
+            respond.apply("You're not playing this game! Start your own with /cb");
         }
     }
-
 }
