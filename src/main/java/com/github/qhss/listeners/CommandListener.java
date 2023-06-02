@@ -42,7 +42,8 @@ public class CommandListener implements SlashCommandCreateListener {
                                 slashCommandInteraction.createImmediateResponder().setContent("Added! Your init balance: $1000").respond();
                         }
                         else {
-                                array[JsonUtils.findPlayer(array, playerName)].setMoney(1000);
+                                array[plrIndex].setMoney(1000);
+                                JsonUtils.changeMoney(playerName, array[plrIndex]);
                                 slashCommandInteraction.createImmediateResponder().setContent("Your balance is reset!").respond();
                         }
                         return;
@@ -60,15 +61,27 @@ public class CommandListener implements SlashCommandCreateListener {
                     SlashCommandInteractionOption s = slashCommandInteraction.getOptions().get(0);
 
                     if (s.getName().equals("bj")) {
-                        if (Main.getGame().containsKey(playerName)) {
-                                slashCommandInteraction.createImmediateResponder().setContent("You're already playing a game!").setFlags(MessageFlag.EPHEMERAL).respond();
+                        if (Main.userGame.containsKey(playerName) || Main.channelUser.containsKey(slashCommandInteraction.getChannel().get())) {
+                                slashCommandInteraction.createImmediateResponder().setContent("You're already playing a game or the channel already has an ongoing game!").setFlags(MessageFlag.EPHEMERAL).respond();
                                 return;
                         }
-                        Blackjack bj = new Blackjack(array[JsonUtils.findPlayer(array, playerName)], s.getDecimalValue().get().intValue());
-                        Main.getGame().put(playerName, bj);
+
+                        if (plrIndex == -1) {
+                                slashCommandInteraction.createImmediateResponder().setContent("You're not in the balance sheet! Do /cbaddself to do so.").setFlags(MessageFlag.EPHEMERAL).respond();
+                                return;
+                        }
+
+                        if (s.getDecimalValue().get().intValue() > array[plrIndex].getMoney()) {
+                                slashCommandInteraction.createImmediateResponder().setContent("You're too poor to bet that much right now. Check your balance!").setFlags(MessageFlag.EPHEMERAL).respond();
+                                return;
+                        }
+
+                        Main.channelUser.put(slashCommandInteraction.getChannel().get(), playerName);
+                        Blackjack bj = new Blackjack(array[plrIndex], s.getDecimalValue().get().intValue());
+                        Main.userGame.put(playerName, bj);
                         if (bj.getScore(bj.getPlayer()) == 21) {
                                 try {
-                                        Main.appendImages(bj, true);
+                                        Main.appendImages(bj, true, playerName);
                                 } catch (IOException e) {
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
@@ -81,14 +94,15 @@ public class CommandListener implements SlashCommandCreateListener {
                                 new MessageBuilder().setEmbed(
                                 DefaultEmbeds.finalEmbed("You've got Blackjack and won!", playerName, bj, (int) (2.5 * bj.getBetAmount())))
                                         .send(slashCommandInteraction.getChannel().get());
-                                Main.getGame().remove(playerName);
+                                Main.userGame.remove(playerName);
+                                Main.channelUser.remove(slashCommandInteraction.getChannel().get());
 
                                 // ignores error msg
                                 slashCommandInteraction.createImmediateResponder().respond();
                                 return;
                         }
                         try {
-                                Main.appendImages(bj, false);
+                                Main.appendImages(bj, false, playerName);
                         } catch (IOException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();

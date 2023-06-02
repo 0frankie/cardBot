@@ -11,8 +11,6 @@ import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.entity.user.User;
 
-import okhttp3.internal.ws.RealWebSocket.Message;
-
 
 public interface DefaultEmbeds {
     static MessageBuilder defaultMessage(String message, User user, Blackjack bj) {
@@ -25,7 +23,7 @@ public interface DefaultEmbeds {
                     .setColor(Color.CYAN)
                     .setFooter(
                             "Your bet: $" + bj.getBetAmount())
-                    .setImage(new File("src/main/resources/assets/combined.png"))
+                    .setImage(new File("src/main/resources/assets/combined" + user.getDiscriminatedName() + ".png"))
                     .setThumbnail(
                             new File(
                                     Main.getClassLoader()
@@ -63,7 +61,7 @@ public interface DefaultEmbeds {
                 .setColor(Color.CYAN)
                 .setFooter(
                         "Your bet: $" + bj.getBetAmount())
-                .setImage(new File("src/main/resources/assets/combined.png"))
+                .setImage(new File("src/main/resources/assets/combined" + username + ".png"))
                 .setThumbnail(
                         new File(
                                 Main.getClassLoader()

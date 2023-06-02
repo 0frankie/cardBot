@@ -14,8 +14,8 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 
 public class Main implements CommandsInit {
-    private static HashMap<String, Blackjack> userGame = new HashMap<String, Blackjack>();
-    private static HashMap<String, TextChannel> userChannel = new HashMap<String, TextChannel>();
+    public static HashMap<String, Blackjack> userGame = new HashMap<String, Blackjack>();
+    public static HashMap<TextChannel, String> channelUser = new HashMap<TextChannel, String>();
 
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
@@ -36,15 +36,7 @@ public class Main implements CommandsInit {
         CommandsInit.init(api);
     }
 
-    public static HashMap<String, TextChannel> getChannel() {
-        return userChannel;
-    }
-
-    public static HashMap<String, Blackjack> getGame() {
-        return userGame;
-    }
-
-    public static void appendImages(Blackjack bj, boolean fin) throws IOException {
+    public static void appendImages(Blackjack bj, boolean fin, String username) throws IOException {
 
         // load source images
         BufferedImage background = ImageIO.read(new File("src/main/resources/assets/table.png"));
@@ -81,6 +73,6 @@ public class Main implements CommandsInit {
         g.dispose();
 
         // Save as new image
-        ImageIO.write(combined, "PNG", new File("src/main/resources/assets/combined.png"));
+        ImageIO.write(combined, "PNG", new File("src/main/resources/assets/combined" + username + ".png"));
     }
 }

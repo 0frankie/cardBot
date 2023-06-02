@@ -17,10 +17,10 @@ public class ButtonListener implements ButtonClickListener {
 
     @Override
     public void onButtonClick(ButtonClickEvent event) {
-        HashMap<String, Blackjack> games = Main.getGame();
+        HashMap<String, Blackjack> games = Main.userGame;
         String username = event.getButtonInteraction().getUser().getDiscriminatedName();
 
-        if (games.containsKey(username)) {
+        if (games.containsKey(username) && Main.channelUser.get(event.getButtonInteraction().getChannel().get()).equals(event.getButtonInteraction().getUser().getDiscriminatedName())) {
             Blackjack bj = games.get(username);
             switch (event.getButtonInteraction().getCustomId()) {
                 case "stand": {
@@ -45,7 +45,7 @@ public class ButtonListener implements ButtonClickListener {
                         bet = 0;
                     }
                     try {
-                        Main.appendImages(bj, true);
+                        Main.appendImages(bj, true, username);
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -60,7 +60,8 @@ public class ButtonListener implements ButtonClickListener {
                             new MessageBuilder()
                                 .setEmbed(DefaultEmbeds.finalEmbed(message, username, bj, Math.abs(bet)))
                                 .send(event.getButtonInteraction().getChannel().get());
-                            Main.getGame().remove(username);
+                            Main.userGame.remove(username);
+                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
                     }
                     break;
                 }
@@ -68,7 +69,7 @@ public class ButtonListener implements ButtonClickListener {
                     event.getButtonInteraction().getMessage().delete();
                     if (!bj.hit()) {
                         try {
-                            Main.appendImages(bj, true);
+                            Main.appendImages(bj, true, username);
                         } catch (IOException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
@@ -81,12 +82,13 @@ public class ButtonListener implements ButtonClickListener {
                         new MessageBuilder()
                                 .setEmbed(DefaultEmbeds.finalEmbed("You hit and lost!", username, bj, bj.getBetAmount()))
                                 .send(event.getButtonInteraction().getChannel().get());                                
-                        Main.getGame().remove(username);
+                        Main.userGame.remove(username);
+                        Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
                         break;
                     }
                     if (bj.getPlayer().getHand().size() == 5) {
                         try {
-                            Main.appendImages(bj, true);
+                            Main.appendImages(bj, true, username);
                         } catch (IOException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
@@ -99,20 +101,15 @@ public class ButtonListener implements ButtonClickListener {
                         new MessageBuilder()
                                 .setEmbed(DefaultEmbeds.finalEmbed("You hit and got 5 in a row, so you won!", username, bj, bj.getBetAmount()))
                                 .send(event.getButtonInteraction().getChannel().get());                                
-                        Main.getGame().remove(username);
+                        Main.userGame.remove(username);
+                        Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
                         break;
-                    }
-                    try {
-                        Main.appendImages(bj, false);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
                     }
 
                     if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
                         if (bj.getScore(bj.getPlayer()) == 21) {
                             try {
-                                Main.appendImages(bj, true);
+                                Main.appendImages(bj, true, username);
                             } catch (Exception e) {
                                 // TODO: handle exception
                             }
@@ -120,7 +117,8 @@ public class ButtonListener implements ButtonClickListener {
                             player.setMoney(player.getMoney() + bj.getBetAmount());
                             JsonUtils.changeMoney(username, player);
 
-                            Main.getGame().remove(username);
+                            Main.userGame.remove(username);
+                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
                             new MessageBuilder()
                                 .setEmbed(DefaultEmbeds.finalEmbed("You hit and won by getting 21!", username, bj, bj.getBetAmount()))
                                 .send(event.getButtonInteraction().getChannel().get());
@@ -137,12 +135,22 @@ public class ButtonListener implements ButtonClickListener {
                  * Only 2 cards: draw 1 card, stand
                  */
                 case "double-down": {
+                    if (bj.getPlayer().getMoney() < 2 * bj.getBetAmount()) {
+                        event.getButtonInteraction().createImmediateResponder().setContent("You can't double down with not enough money!").setFlags(MessageFlag.EPHEMERAL).respond();
+                        break;
+                    }
                     if (!bj.doubleDown()) {
                         event.getButtonInteraction().createImmediateResponder().setContent("You've already picked up! Not allowed to do that!").setFlags(MessageFlag.EPHEMERAL).respond();
                         break;
                     }
                     if (games.containsKey(event.getButtonInteraction().getUser().getDiscriminatedName())) {
                         event.getButtonInteraction().getMessage().delete();
+                        try {
+                            Main.appendImages(bj, true, username);
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
 
                         if (bj.getScore(bj.getDealer()) == 21) {
                             Player player = bj.getPlayer();
@@ -152,13 +160,27 @@ public class ButtonListener implements ButtonClickListener {
                                 .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down and lost to Blackjack!", username, bj, 5 * bj.getBetAmount()))
                                 .send(event.getButtonInteraction().getChannel().get());
 
-                            Main.getGame().remove(username);
+                            Main.userGame.remove(username);
+                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
+                            break;
+                        }
+
+                        if (bj.checkWinner() == 0) {
+                            Player player = bj.getPlayer();
+                            player.setMoney(player.getMoney() - 2 * bj.getBetAmount());
+                            JsonUtils.changeMoney(username, player);
+                            new MessageBuilder()
+                                .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down and lost!", username, bj, 2 * bj.getBetAmount()))
+                                .send(event.getButtonInteraction().getChannel().get());
+
+                            Main.userGame.remove(username);
+                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
                             break;
                         }
                         bj.dealerPlay();
-                        
+
                         try {
-                            Main.appendImages(bj, true);
+                            Main.appendImages(bj, true, username);
                         } catch (IOException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
@@ -187,7 +209,8 @@ public class ButtonListener implements ButtonClickListener {
                             .setEmbed(DefaultEmbeds.finalEmbed("You doubled-down" + " and " + message, username, bj, Math.abs(2 * bj.getBetAmount())))
                             .send(event.getButtonInteraction().getChannel().get());
 
-                            Main.getGame().remove(username);
+                            Main.userGame.remove(username);
+                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
                     }
                     break;
                 }
@@ -196,7 +219,8 @@ public class ButtonListener implements ButtonClickListener {
                         if (games.get(username).getDealerCards().length == 2 && games.get(username).getPlayerCards().length == 2) {
                             event.getButtonInteraction().getMessage().delete();
                             event.getButtonInteraction().createImmediateResponder().setContent("Exited game").setFlags(MessageFlag.EPHEMERAL).respond();
-                            Main.getGame().remove(username);
+                            Main.userGame.remove(username);
+                            Main.channelUser.remove(event.getButtonInteraction().getChannel().get());
                             break;
                         }
                     }
@@ -204,6 +228,9 @@ public class ButtonListener implements ButtonClickListener {
                     break;
                 }
             }    
+        }
+        else {
+            event.getButtonInteraction().createImmediateResponder().setContent("You're not playing this game! Start your own with /cb").respond();
         }
     }
 

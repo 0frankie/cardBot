@@ -46,3 +46,6 @@ bin/
 
 ### Generated Images ###
 src/main/resources/assets/*.png
+
+### Balance Sheet ###
+src/main/resources/balance.json
