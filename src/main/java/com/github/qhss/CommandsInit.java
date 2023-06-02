@@ -8,6 +8,10 @@ import java.util.Arrays;
 import java.util.Set;
 
 public interface CommandsInit {
+    /**
+     * creates all the slash commands for Discord
+     * should only need to be called **ONCE**
+     */
     static void init(DiscordApi api) {
         SlashCommand games =
                 SlashCommand.with(

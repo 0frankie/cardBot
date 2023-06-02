@@ -13,7 +13,6 @@ import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 
-import java.io.IOException;
 import java.util.function.Function;
 
 public class CommandListener implements SlashCommandCreateListener {
@@ -27,7 +26,7 @@ public class CommandListener implements SlashCommandCreateListener {
                 JsonUtils.findPlayer(
                         array, slashCommandInteraction.getUser().getDiscriminatedName());
 
-        // lambda to respond to basic commands
+        // default response via lambda (captures environment)
         Function<String, Void> respond =
                 msg -> {
                     slashCommandInteraction
@@ -91,12 +90,8 @@ public class CommandListener implements SlashCommandCreateListener {
             Main.addToMaps(playerName, slashCommandInteraction.getChannel().get(), bj);
 
             if (bj.getScore(bj.getPlayer()) == 21) {
-                try {
-                    Main.appendImages(bj, true, playerName);
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+                Main.appendImages(bj, true, playerName);
+                
 
                 Player player = bj.getPlayer();
                 player.setMoney(player.getMoney() + (int) (2.5 * bj.getBetAmount()));
@@ -117,12 +112,8 @@ public class CommandListener implements SlashCommandCreateListener {
                 slashCommandInteraction.createImmediateResponder().respond();
                 return;
             }
-            try {
-                Main.appendImages(bj, false, playerName);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            Main.appendImages(bj, false, playerName);
+            
             DefaultEmbeds.defaultMessage(
                             "Play Blackjack against dealer!", slashCommandInteraction.getUser(), bj)
                     .send(slashCommandInteraction.getChannel().get());

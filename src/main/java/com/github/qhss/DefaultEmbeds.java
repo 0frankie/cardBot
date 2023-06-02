@@ -27,10 +27,7 @@ public interface DefaultEmbeds {
                                                 + user.getDiscriminatedName()
                                                 + ".png"))
                         .setThumbnail(
-                                new File(
-                                        Main.getClassLoader()
-                                                .getResource("assets/profile.png")
-                                                .getFile()));
+                                new File("src/main/resources/assets/profile.png"));
 
         AllowedMentions allowedMentions =
                 new AllowedMentionsBuilder()
@@ -65,8 +62,6 @@ public interface DefaultEmbeds {
                 .setColor(Color.CYAN)
                 .setFooter("Your bet: $" + bj.getBetAmount())
                 .setImage(new File("src/main/resources/assets/combined" + username + ".png"))
-                .setThumbnail(
-                        new File(
-                                Main.getClassLoader().getResource("assets/profile.png").getFile()));
+                .setThumbnail(new File("src/main/resources/assets/profile.png"));
     }
 }

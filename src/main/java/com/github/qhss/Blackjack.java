@@ -13,6 +13,7 @@ public class Blackjack implements CardGame {
         play();
     }
 
+    // bj starts with each player getting 2 cards
     @Override
     public void play() {
         player.addToHand(deck.getTop());
@@ -57,20 +58,20 @@ public class Blackjack implements CardGame {
         return dealer.getUsername();
     }
 
-    /*
-     * 1 is true
-     * 0 is false
-     * -1 is tied
+    /**
+     * checks if player or dealer won
+     * 
+     * @return  the results of the game
      */
     @Override
     public String checkWinner() {
         int score = getScore(player);
         if (score <= 21 && (score > getScore(dealer) || getScore(dealer) > 21)) {
-            return "you won";
+            return "You won!";
         } else if (score <= 21 && score == getScore(dealer)) {
-            return "you tied";
+            return "You tied!";
         } else {
-            return "you lost";
+            return "You lost!";
         }
     }
 
@@ -89,19 +90,22 @@ public class Blackjack implements CardGame {
         }
         return score;
     }
-    /*
-     * Card.getSuit() == suit
-     * Card.cardSymbol().name() == number
-     */
+
     public String[] getPlayerCards() {
-        return getStrings(player);
+        return getPaths(player);
     }
 
     public String[] getDealerCards() {
-        return getStrings(dealer);
+        return getPaths(dealer);
     }
 
-    private String[] getStrings(Player plr) {
+    /**
+     * gets file paths for card image files to display
+     * 
+     * @param   plr an instance of a Player
+     * @return      array of paths for the cards for the Player
+     */
+    private String[] getPaths(Player plr) {
         String[] handPaths = new String[plr.getHand().size()];
         for (int i = 0; i < handPaths.length; i++) {
             handPaths[i] =

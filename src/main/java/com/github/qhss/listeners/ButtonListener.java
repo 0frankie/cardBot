@@ -13,7 +13,6 @@ import org.javacord.api.event.interaction.ButtonClickEvent;
 import org.javacord.api.interaction.ButtonInteraction;
 import org.javacord.api.listener.interaction.ButtonClickListener;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.function.Function;
 
@@ -25,6 +24,8 @@ public class ButtonListener implements ButtonClickListener {
         ButtonInteraction interaction = event.getButtonInteraction();
         String username = interaction.getUser().getDiscriminatedName();
         TextChannel channel = interaction.getChannel().get();
+
+        // default response via lambda (captures environment)
         Function<String, Void> respond =
                 msg -> {
                     interaction
@@ -35,10 +36,12 @@ public class ButtonListener implements ButtonClickListener {
                     return null;
                 };
 
+        // check if player is playing a game and if they're playing in the channel
         if (games.containsKey(username) && Main.channelUser.get(channel).equals(username)) {
             Blackjack bj = games.get(username);
             Player player = bj.getPlayer();
 
+            // depending on which button they click
             switch (interaction.getCustomId()) {
                 case "stand" -> {
                     String message;
@@ -56,12 +59,8 @@ public class ButtonListener implements ButtonClickListener {
                                         ? bj.getBetAmount()
                                         : message.contains("lost") ? -bj.getBetAmount() : 0;
                     }
-                    try {
-                        Main.appendImages(bj, true, username);
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    Main.appendImages(bj, true, username);
+                    
 
                     player.setMoney(player.getMoney() + bet);
                     JsonUtils.changeMoney(username, player);
@@ -78,13 +77,10 @@ public class ButtonListener implements ButtonClickListener {
                 }
                 case "hit" -> {
                     interaction.getMessage().delete();
+                    // if hit and value > 21
                     if (!bj.hit()) {
-                        try {
-                            Main.appendImages(bj, true, username);
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+                        Main.appendImages(bj, true, username);
+                        
 
                         player.setMoney(player.getMoney() - bj.getBetAmount());
                         JsonUtils.changeMoney(username, player);
@@ -100,13 +96,10 @@ public class ButtonListener implements ButtonClickListener {
                         Main.removeFromMaps(username, channel);
                         break;
                     }
+
                     if (bj.getPlayer().getHand().size() == 5) {
-                        try {
-                            Main.appendImages(bj, true, username);
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+                        Main.appendImages(bj, true, username);
+                        
 
                         player.setMoney(player.getMoney() + bj.getBetAmount());
                         JsonUtils.changeMoney(username, player);
@@ -123,35 +116,32 @@ public class ButtonListener implements ButtonClickListener {
                         break;
                     }
 
-                    if (games.containsKey(username)) {
-                        if (bj.getScore(bj.getPlayer()) == 21) {
-                            try {
-                                Main.appendImages(bj, true, username);
-                            } catch (Exception e) {
-                                // TODO: handle exception
-                            }
-                            player.setMoney(player.getMoney() + bj.getBetAmount());
-                            JsonUtils.changeMoney(username, player);
+                    if (bj.getScore(bj.getPlayer()) == 21) {
+                        Main.appendImages(bj, true, username);
+                        
+                        player.setMoney(player.getMoney() + bj.getBetAmount());
+                        JsonUtils.changeMoney(username, player);
 
-                            Main.removeFromMaps(username, channel);
-                            new MessageBuilder()
-                                    .setEmbed(
-                                            DefaultEmbeds.finalEmbed(
-                                                    "You hit and won by getting 21!",
-                                                    username,
-                                                    bj,
-                                                    bj.getBetAmount()))
-                                    .send(channel);
-                            break;
-                        }
-                        DefaultEmbeds.defaultMessage("You hit!", interaction.getUser(), bj)
+                        Main.removeFromMaps(username, channel);
+                        new MessageBuilder()
+                                .setEmbed(
+                                        DefaultEmbeds.finalEmbed(
+                                                "You hit and won by getting 21!",
+                                                username,
+                                                bj,
+                                                bj.getBetAmount()))
                                 .send(channel);
+                        break;
                     }
+
+                    Main.appendImages(bj, false, username);
+                    DefaultEmbeds.defaultMessage("You hit!", interaction.getUser(), bj)
+                            .send(channel);
                 }
 
-                    /*
-                     * Only 2 cards: draw 1 card, stand
-                     */
+                /*
+                 * Only 2 cards: draw 1 card, stand
+                 */
                 case "double-down" -> {
                     if (bj.getPlayer().getMoney() < 2 * bj.getBetAmount()) {
                         respond.apply("You can't double down with not enough money!");
@@ -161,75 +151,66 @@ public class ButtonListener implements ButtonClickListener {
                         respond.apply("You've already picked up! Not allowed to do that!");
                         break;
                     }
-                    if (games.containsKey(username)) {
-                        interaction.getMessage().delete();
-                        try {
-                            Main.appendImages(bj, true, username);
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+                
+                    interaction.getMessage().delete();
+                    Main.appendImages(bj, true, username);
+                    
 
-                        if (bj.getScore(bj.getDealer()) == 21) {
-                            player.setMoney(player.getMoney() - 5 * bj.getBetAmount());
-                            JsonUtils.changeMoney(username, player);
-                            new MessageBuilder()
-                                    .setEmbed(
-                                            DefaultEmbeds.finalEmbed(
-                                                    "You doubled-down and lost to Blackjack!",
-                                                    username,
-                                                    bj,
-                                                    5 * bj.getBetAmount()))
-                                    .send(channel);
-
-                            Main.removeFromMaps(username, channel);
-                            break;
-                        }
-
-                        if (bj.checkWinner().contains("lost")) {
-                            player.setMoney(player.getMoney() - 2 * bj.getBetAmount());
-                            JsonUtils.changeMoney(username, player);
-                            new MessageBuilder()
-                                    .setEmbed(
-                                            DefaultEmbeds.finalEmbed(
-                                                    "You doubled-down and lost!",
-                                                    username,
-                                                    bj,
-                                                    2 * bj.getBetAmount()))
-                                    .send(channel);
-
-                            Main.removeFromMaps(username, channel);
-                            break;
-                        }
-                        bj.dealerPlay();
-
-                        try {
-                            Main.appendImages(bj, true, username);
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-
-                        String message = bj.checkWinner();
-                        int bet =
-                                message.contains("won")
-                                        ? bj.getBetAmount()
-                                        : message.contains("lost") ? -bj.getBetAmount() : 0;
-
-                        player.setMoney(player.getMoney() + 2 * bet);
+                    if (bj.getScore(bj.getDealer()) == 21) {
+                        player.setMoney(player.getMoney() - 5 * bj.getBetAmount());
                         JsonUtils.changeMoney(username, player);
-
                         new MessageBuilder()
                                 .setEmbed(
                                         DefaultEmbeds.finalEmbed(
-                                                "You doubled-down" + " and " + message,
+                                                "You doubled-down and lost to Blackjack!",
                                                 username,
                                                 bj,
-                                                Math.abs(2 * bj.getBetAmount())))
+                                                5 * bj.getBetAmount()))
                                 .send(channel);
 
                         Main.removeFromMaps(username, channel);
+                        break;
                     }
+
+                    if (bj.checkWinner().contains("lost")) {
+                        player.setMoney(player.getMoney() - 2 * bj.getBetAmount());
+                        JsonUtils.changeMoney(username, player);
+                        new MessageBuilder()
+                                .setEmbed(
+                                        DefaultEmbeds.finalEmbed(
+                                                "You doubled-down and lost!",
+                                                username,
+                                                bj,
+                                                2 * bj.getBetAmount()))
+                                .send(channel);
+
+                        Main.removeFromMaps(username, channel);
+                        break;
+                    }
+                    bj.dealerPlay();
+
+                    Main.appendImages(bj, true, username);
+                    
+
+                    String message = bj.checkWinner();
+                    int bet =
+                            message.contains("won")
+                                    ? bj.getBetAmount()
+                                    : message.contains("lost") ? -bj.getBetAmount() : 0;
+
+                    player.setMoney(player.getMoney() + 2 * bet);
+                    JsonUtils.changeMoney(username, player);
+
+                    new MessageBuilder()
+                            .setEmbed(
+                                    DefaultEmbeds.finalEmbed(
+                                            "You doubled-down" + " and " + message,
+                                            username,
+                                            bj,
+                                            Math.abs(2 * bj.getBetAmount())))
+                            .send(channel);
+
+                    Main.removeFromMaps(username, channel);
                 }
                 case "exit" -> {
                     if (games.containsKey(username)) {

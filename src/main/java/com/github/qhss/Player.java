@@ -9,11 +9,13 @@ public class Player {
 
     private String username;
 
+    // dealer
     public Player() {
         turn = false;
         this.money = Integer.MAX_VALUE;
     }
 
+    // normal player
     public Player(int money, String username) {
         turn = true;
         this.money = money;
