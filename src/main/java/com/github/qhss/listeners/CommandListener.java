@@ -91,7 +91,22 @@ public class CommandListener implements SlashCommandCreateListener {
 
             if (bj.getScore(bj.getPlayer()) == 21) {
                 Main.appendImages(bj, true, playerName);
-                
+                if (bj.getScore(bj.getDealer()) == 21) {
+                    new MessageBuilder()
+                        .setEmbed(
+                                DefaultEmbeds.finalEmbed(
+                                        "You've got Blackjack, but so did the dealer! You tied!",
+                                        playerName,
+                                        bj,
+                                        0))
+                        .send(slashCommandInteraction.getChannel().get());
+                    Main.userGame.remove(playerName);
+                    Main.channelUser.remove(slashCommandInteraction.getChannel().get());
+
+                    // ignores error msg
+                    slashCommandInteraction.createImmediateResponder().respond();
+                    return;
+                }
 
                 Player player = bj.getPlayer();
                 player.setMoney(player.getMoney() + (int) (2.5 * bj.getBetAmount()));

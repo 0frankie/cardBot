@@ -80,15 +80,22 @@ public class ButtonListener implements ButtonClickListener {
                     // if hit and value > 21
                     if (!bj.hit()) {
                         Main.appendImages(bj, true, username);
+                        int moneyLost = bj.getBetAmount();
+                        String message = "";
+                        if (bj.getScore(bj.getDealer()) == 21) {
+                            moneyLost *= 2.5;
+                            message = " The opponent got Blackjack!";
+                        }
+                        
                         
 
-                        player.setMoney(player.getMoney() - bj.getBetAmount());
+                        player.setMoney(player.getMoney() - moneyLost);
                         JsonUtils.changeMoney(username, player);
 
                         new MessageBuilder()
                                 .setEmbed(
                                         DefaultEmbeds.finalEmbed(
-                                                "You hit and lost!",
+                                                "You hit and lost!" + message,
                                                 username,
                                                 bj,
                                                 bj.getBetAmount()))
@@ -100,14 +107,22 @@ public class ButtonListener implements ButtonClickListener {
                     if (bj.getPlayer().getHand().size() == 5) {
                         Main.appendImages(bj, true, username);
                         
+                        int money = bj.getBetAmount();
+                        String message = ", so you won!";
+                        
+                        if (bj.getScore(bj.getDealer()) == 21) {
+                            money = (int) (2.5 * -money);
+                            message = ", but the dealer has Blackjack, so you lost!";
+                        }
+                        
 
-                        player.setMoney(player.getMoney() + bj.getBetAmount());
+                        player.setMoney(player.getMoney() + money);
                         JsonUtils.changeMoney(username, player);
 
                         new MessageBuilder()
                                 .setEmbed(
                                         DefaultEmbeds.finalEmbed(
-                                                "You hit and got 5 in a row, so you won!",
+                                                "You hit and got 5 in a row" + message,
                                                 username,
                                                 bj,
                                                 bj.getBetAmount()))
@@ -118,15 +133,22 @@ public class ButtonListener implements ButtonClickListener {
 
                     if (bj.getScore(bj.getPlayer()) == 21) {
                         Main.appendImages(bj, true, username);
+                        String message = "You hit and won by getting 21!";
+                        int money = bj.getBetAmount();
+
+                        if (bj.getScore(bj.getDealer()) == 21) {
+                            message = "You hit and got 21, but the dealer has Blackjack, so you lost!";
+                            money = (int) -(2.5 * money);
+                        }
                         
-                        player.setMoney(player.getMoney() + bj.getBetAmount());
+                        player.setMoney(player.getMoney() + money);
                         JsonUtils.changeMoney(username, player);
 
                         Main.removeFromMaps(username, channel);
                         new MessageBuilder()
                                 .setEmbed(
                                         DefaultEmbeds.finalEmbed(
-                                                "You hit and won by getting 21!",
+                                                message,
                                                 username,
                                                 bj,
                                                 bj.getBetAmount()))
@@ -155,8 +177,7 @@ public class ButtonListener implements ButtonClickListener {
                     interaction.getMessage().delete();
                     Main.appendImages(bj, true, username);
                     
-
-                    if (bj.getScore(bj.getDealer()) == 21) {
+                    if (bj.getScore(bj.getDealer()) == 21 && bj.getDealerCards().length == 2) {
                         player.setMoney(player.getMoney() - 5 * bj.getBetAmount());
                         JsonUtils.changeMoney(username, player);
                         new MessageBuilder()
@@ -172,27 +193,10 @@ public class ButtonListener implements ButtonClickListener {
                         break;
                     }
 
-                    if (bj.checkWinner().contains("lost")) {
-                        player.setMoney(player.getMoney() - 2 * bj.getBetAmount());
-                        JsonUtils.changeMoney(username, player);
-                        new MessageBuilder()
-                                .setEmbed(
-                                        DefaultEmbeds.finalEmbed(
-                                                "You doubled-down and lost!",
-                                                username,
-                                                bj,
-                                                2 * bj.getBetAmount()))
-                                .send(channel);
-
-                        Main.removeFromMaps(username, channel);
-                        break;
-                    }
                     bj.dealerPlay();
-
                     Main.appendImages(bj, true, username);
-                    
-
                     String message = bj.checkWinner();
+                    
                     int bet =
                             message.contains("won")
                                     ? bj.getBetAmount()
@@ -204,10 +208,10 @@ public class ButtonListener implements ButtonClickListener {
                     new MessageBuilder()
                             .setEmbed(
                                     DefaultEmbeds.finalEmbed(
-                                            "You doubled-down" + " and " + message,
+                                            "You doubled-down" + " and " + message.toLowerCase(),
                                             username,
                                             bj,
-                                            Math.abs(2 * bj.getBetAmount())))
+                                            Math.abs(2 * bet)))
                             .send(channel);
 
                     Main.removeFromMaps(username, channel);

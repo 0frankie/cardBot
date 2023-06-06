@@ -68,7 +68,7 @@ public class Blackjack implements CardGame {
         int score = getScore(player);
         if (score <= 21 && (score > getScore(dealer) || getScore(dealer) > 21)) {
             return "You won!";
-        } else if (score <= 21 && score == getScore(dealer)) {
+        } else if ((score <= 21 && score == getScore(dealer)) || score >= 21 && getScore(dealer) >= 21) {
             return "You tied!";
         } else {
             return "You lost!";
