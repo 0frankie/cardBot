@@ -1,8 +1,8 @@
 package com.github.qhss.listeners;
 
 import com.github.qhss.Main;
+import com.github.qhss.card.Player;
 import com.github.qhss.card.game.Blackjack;
-import com.github.qhss.card.game.Player;
 import com.github.qhss.utils.DefaultEmbeds;
 import com.github.qhss.utils.ImageUtils;
 import com.github.qhss.utils.JsonUtils;
@@ -14,6 +14,7 @@ import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 
+import java.time.LocalDate;
 import java.util.function.Function;
 
 public class CommandListener implements SlashCommandCreateListener {
@@ -38,8 +39,10 @@ public class CommandListener implements SlashCommandCreateListener {
                     return null;
                 };
 
+        // DON'T run this; incomplete
         if (slashCommandInteraction.getCommandName().equals("cbdaily")) {
             if (plrIndex != -1) {
+                System.out.println (array[plrIndex].isDayAfter(LocalDate.now()));
                 array[plrIndex].setMoney(array[plrIndex].getMoney() + 500);
                 JsonUtils.write(array);
                 respond.apply("Added 500. Your current balance: " + array[plrIndex].getMoney());

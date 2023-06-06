@@ -1,13 +1,14 @@
-package com.github.qhss.card.game;
+package com.github.qhss.card;
 
+import java.time.LocalDate;
 import java.util.*;
-
-import com.github.qhss.card.Card;
 
 public class Player {
     private transient boolean turn;
-    private int money;
     private final transient ArrayList<Card> hand = new ArrayList<>();
+    
+    private int money;
+    private transient LocalDate time; // transient rn because it errors out otherwise
 
     private String username;
 
@@ -20,6 +21,7 @@ public class Player {
     // normal player
     public Player(int money, String username) {
         turn = true;
+        time = LocalDate.now();
         this.money = money;
         this.username = username;
     }
@@ -50,5 +52,10 @@ public class Player {
 
     public void changeTurn(boolean change) {
         turn = change;
+    }
+
+    public boolean isDayAfter(LocalDate time) {
+        System.out.println(this.time.compareTo(time));
+        return true;
     }
 }
