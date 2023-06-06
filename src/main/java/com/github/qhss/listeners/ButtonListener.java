@@ -1,10 +1,11 @@
 package com.github.qhss.listeners;
 
-import com.github.qhss.Blackjack;
-import com.github.qhss.DefaultEmbeds;
-import com.github.qhss.JsonUtils;
 import com.github.qhss.Main;
-import com.github.qhss.Player;
+import com.github.qhss.card.game.Blackjack;
+import com.github.qhss.card.game.Player;
+import com.github.qhss.utils.DefaultEmbeds;
+import com.github.qhss.utils.ImageUtils;
+import com.github.qhss.utils.JsonUtils;
 
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
@@ -59,7 +60,7 @@ public class ButtonListener implements ButtonClickListener {
                                         ? bj.getBetAmount()
                                         : message.contains("lost") ? -bj.getBetAmount() : 0;
                     }
-                    Main.appendImages(bj, true, username);
+                    ImageUtils.appendImages(bj, true, username);
                     
 
                     player.setMoney(player.getMoney() + bet);
@@ -79,7 +80,7 @@ public class ButtonListener implements ButtonClickListener {
                     interaction.getMessage().delete();
                     // if hit and value > 21
                     if (!bj.hit()) {
-                        Main.appendImages(bj, true, username);
+                        ImageUtils.appendImages(bj, true, username);
                         int moneyLost = bj.getBetAmount();
                         String message = "";
                         if (bj.getScore(bj.getDealer()) == 21) {
@@ -105,7 +106,7 @@ public class ButtonListener implements ButtonClickListener {
                     }
 
                     if (bj.getPlayer().getHand().size() == 5) {
-                        Main.appendImages(bj, true, username);
+                        ImageUtils.appendImages(bj, true, username);
                         
                         int money = bj.getBetAmount();
                         String message = ", so you won!";
@@ -132,7 +133,7 @@ public class ButtonListener implements ButtonClickListener {
                     }
 
                     if (bj.getScore(bj.getPlayer()) == 21) {
-                        Main.appendImages(bj, true, username);
+                        ImageUtils.appendImages(bj, true, username);
                         String message = "You hit and won by getting 21!";
                         int money = bj.getBetAmount();
 
@@ -156,7 +157,7 @@ public class ButtonListener implements ButtonClickListener {
                         break;
                     }
 
-                    Main.appendImages(bj, false, username);
+                    ImageUtils.appendImages(bj, false, username);
                     DefaultEmbeds.defaultMessage("You hit!", interaction.getUser(), bj)
                             .send(channel);
                 }
@@ -175,7 +176,7 @@ public class ButtonListener implements ButtonClickListener {
                     }
                 
                     interaction.getMessage().delete();
-                    Main.appendImages(bj, true, username);
+                    ImageUtils.appendImages(bj, true, username);
                     
                     if (bj.getScore(bj.getDealer()) == 21 && bj.getDealerCards().length == 2) {
                         player.setMoney(player.getMoney() - 5 * bj.getBetAmount());
@@ -194,7 +195,7 @@ public class ButtonListener implements ButtonClickListener {
                     }
 
                     bj.dealerPlay();
-                    Main.appendImages(bj, true, username);
+                    ImageUtils.appendImages(bj, true, username);
                     String message = bj.checkWinner();
                     
                     int bet =

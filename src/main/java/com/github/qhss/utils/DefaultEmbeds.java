@@ -1,4 +1,4 @@
-package com.github.qhss;
+package com.github.qhss.utils;
 
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.component.ActionRow;
@@ -7,6 +7,8 @@ import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.entity.user.User;
+
+import com.github.qhss.card.game.Blackjack;
 
 import java.awt.Color;
 import java.io.File;

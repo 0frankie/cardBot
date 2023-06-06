@@ -1,5 +1,6 @@
-package com.github.qhss;
+package com.github.qhss.utils;
 
+import com.github.qhss.card.game.Player;
 import com.google.gson.Gson;
 
 import java.io.FileReader;

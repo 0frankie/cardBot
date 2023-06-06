@@ -1,10 +1,11 @@
 package com.github.qhss.listeners;
 
-import com.github.qhss.Blackjack;
-import com.github.qhss.DefaultEmbeds;
-import com.github.qhss.JsonUtils;
 import com.github.qhss.Main;
-import com.github.qhss.Player;
+import com.github.qhss.card.game.Blackjack;
+import com.github.qhss.card.game.Player;
+import com.github.qhss.utils.DefaultEmbeds;
+import com.github.qhss.utils.ImageUtils;
+import com.github.qhss.utils.JsonUtils;
 
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.MessageFlag;
@@ -90,7 +91,7 @@ public class CommandListener implements SlashCommandCreateListener {
             Main.addToMaps(playerName, slashCommandInteraction.getChannel().get(), bj);
 
             if (bj.getScore(bj.getPlayer()) == 21) {
-                Main.appendImages(bj, true, playerName);
+                ImageUtils.appendImages(bj, true, playerName);
                 if (bj.getScore(bj.getDealer()) == 21) {
                     new MessageBuilder()
                         .setEmbed(
@@ -127,7 +128,7 @@ public class CommandListener implements SlashCommandCreateListener {
                 slashCommandInteraction.createImmediateResponder().respond();
                 return;
             }
-            Main.appendImages(bj, false, playerName);
+            ImageUtils.appendImages(bj, false, playerName);
             
             DefaultEmbeds.defaultMessage(
                             "Play Blackjack against dealer!", slashCommandInteraction.getUser(), bj)

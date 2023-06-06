@@ -1,4 +1,6 @@
-package com.github.qhss;
+package com.github.qhss.card.game;
+
+import com.github.qhss.card.Deck;
 
 public interface CardGame {
     Deck deck = new Deck();

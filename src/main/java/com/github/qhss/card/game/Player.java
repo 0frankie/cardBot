@@ -1,6 +1,8 @@
-package com.github.qhss;
+package com.github.qhss.card.game;
 
 import java.util.*;
+
+import com.github.qhss.card.Card;
 
 public class Player {
     private transient boolean turn;

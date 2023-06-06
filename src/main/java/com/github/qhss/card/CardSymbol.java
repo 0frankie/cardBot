@@ -1,4 +1,4 @@
-package com.github.qhss;
+package com.github.qhss.card;
 
 public enum CardSymbol {
     A(11),

@@ -1,4 +1,4 @@
-package com.github.qhss;
+package com.github.qhss.utils;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.interaction.SlashCommand;

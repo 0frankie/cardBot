@@ -1,6 +1,6 @@
-package com.github.qhss;
+package com.github.qhss.card;
 
-import static com.github.qhss.CardSymbol.*;
+import static com.github.qhss.card.CardSymbol.*;
 
 import java.util.*;
 

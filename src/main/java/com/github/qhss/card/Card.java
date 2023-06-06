@@ -1,3 +1,3 @@
-package com.github.qhss;
+package com.github.qhss.card;
 
 public record Card(CardSymbol cardSymbol, char suit) {}
