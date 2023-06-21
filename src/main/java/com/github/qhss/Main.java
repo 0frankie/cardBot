@@ -19,7 +19,7 @@ public class Main implements CommandsInit {
     public static void main(String[] args) {
         DiscordApi api =
                 new DiscordApiBuilder()
-                        .setToken(System.getenv("DISCORD_TOKEN"))
+                        .setToken(System.getenv("DISCORD_TOKEN")) // fetches from environment, not .env
                         .addIntents(Intent.MESSAGE_CONTENT)
                         .login()
                         .join();
