@@ -1,13 +1,14 @@
 # Card Bot
-**Card Bot** is a Discord bot built in Java with [Javacord](https://javacord.org/) meant to stimulate household playing card games.
+**Card Bot** is a Discord bot built in Java with [Javacord](https://javacord.org/) meant to simulate household playing card games.
 
 ![Profile Image](./src/main/resources/assets/profile.png)
+
+![Game Demo](./src/main/resources/assets/cardBotDemo.gif)
 
 ## Games
 - Blackjack
 
 ## Authors
-
 Programmers:
 - Brandon H
 - Ishraque K
